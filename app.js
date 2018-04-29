@@ -25,7 +25,7 @@ const users = require('./routes/users');
 const articles = require('./routes/articles/articles');
 
 
-const port = 3000;
+//const port = 3000;
 
 app.use(cors());
 
@@ -46,7 +46,9 @@ app.get('/', (req, res) => {
   res.send('Invalid Endpoint');
 });
 
-// Iniciar servidor
-app.listen(port, () => {
-  console.log('Server started on port '+port);
+app.set('port', (process.env.PORT || 3006));
+
+app.listen(app.get('port'), function(){
+	console.log('Server started on port '+app.get('port'));
 });
+
