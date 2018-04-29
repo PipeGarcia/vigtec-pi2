@@ -56,7 +56,7 @@ export class UploadComponent implements OnInit {
   }
 
   getFileList() {
-    let files = [];
+    const files = [];
     for(let i = 0; i < this.filesToUpload.length; i++){
       files.push(this.filesToUpload[i].name);
     }
