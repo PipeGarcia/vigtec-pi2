@@ -30,7 +30,7 @@ const port = 3000;
 app.use(cors());
 
 // Asignar carpeta estática --> Middleware para Archivos que no cambian
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public/index.html')));
 
 app.use(bodyParser.json());
 
