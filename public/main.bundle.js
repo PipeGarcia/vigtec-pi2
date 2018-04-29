@@ -1285,7 +1285,7 @@ var ValidateService = /** @class */ (function () {
     function ValidateService() {
     }
     ValidateService.prototype.validateRegister = function (user) {
-        if (user.name == undefined || user.email == undefined || user.username == undefined || user.password == undefined) {
+        if (user.name === undefined || user.email === undefined || user.username === undefined || user.password === undefined) {
             return false;
         }
         else {

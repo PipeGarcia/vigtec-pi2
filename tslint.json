@@ -1,4 +1,9 @@
 {
+  "extends": [
+    "tslint-eslint-rules", 
+    "tslint:recommended", 
+    "tslint-sonarts"
+  ],
   "rulesDirectory": [
     "node_modules/codelyzer"
   ],
