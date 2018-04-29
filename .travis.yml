@@ -1,0 +1,9 @@
+language: node_js
+addons:
+  sonarcloud:
+    organization: "pipegarcia-github" # the key of the org you chose at step #3
+    token:
+      secure: 91202759797814e7f0d2d0104cf3b5774d3d201a # encrypted value of your token
+script:
+  # other script steps might be done before running the actual analysis
+  - sonar-scanner
