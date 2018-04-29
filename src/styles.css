@@ -1,0 +1,53 @@
+/* You can add global styles to this file, and also import other style files */
+.center {
+    margin: auto;
+    width: 50%;
+    padding: 10px;
+}
+
+#inner {
+    width: 50%;
+    margin: 0 auto;
+}
+
+.message {
+    border-radius: 50px;
+    margin: 0 15px 10px;
+    padding: 15px 20px;
+    position: relative;
+    font-weight: bold;
+    width: 50%;
+}
+.message.to {
+    background-color: #2095FE;
+    color: #fff;
+    margin-left: 100px;
+    text-align: right;
+    width: 50%;
+    padding: 10px;
+}
+.message.from {
+    background-color: #E5E4E9;
+    color: #363636;
+    margin-right: 100px;
+    width: 50%;
+    padding: 10px;
+
+}
+.message.to + .message.to,
+.message.from + .message.from {
+margin-top: -10px;
+margin: auto;
+    width: 50%;
+    padding: 10px;
+}
+
+.list {
+    background-color: #363636;
+    border-radius: 5px;
+    margin: 0 15px 10px;
+    padding: 15px 20px;
+    position: relative;
+    font-weight: bold;
+    width: 50%;
+}

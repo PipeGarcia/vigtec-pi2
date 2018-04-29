@@ -1,0 +1,29 @@
+<h2 class="page-header">Vigtec</h2>
+<div class="center">
+    <input [(ngModel)]="sentMessage" type="text">
+    <button (click)="initChat(sentMessage)">Send your message</button>  
+</div>
+<ng-container *ngFor = "let message of messages">
+    <div class="message" [ngClass]="{ 'from': message.sentBy === 'bot',
+                                        'to': message.sentBy === 'user'}">
+    {{ message.content }}
+    </div>
+</ng-container>
+
+<div style="position:relative; color:gray">
+        <h2 *ngIf="showSpinner">
+            Searching...
+        </h2>
+        <spinner-component [spinnerShow]="showSpinner"></spinner-component>
+</div>
+
+<p>{{algo}}</p>
+
+<ol *ngIf="query && query.length > 0" class="list">
+    <li *ngFor = "let q of query">
+        {{q.nombreDocumento}} <br> {{q.palabrasClaves}}
+    </li>
+</ol>
+
+<!--<app-statistics [list]="query" *ngIf="showStatistics"></app-statistics>-->
+
