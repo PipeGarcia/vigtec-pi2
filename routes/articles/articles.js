@@ -49,11 +49,7 @@ router.post('/initChatbot', (req, res, next) => {
     severalWords = false;
   }
 
-  var search_query = {
-    all: words
-    //author: 'William Chan'
-  };
-
+  
   getFilteredDocsPerAnio(req.body.mensaje).then(function (documentos) {
     console.log(documentos.length);
     getDocumentsPromise(documentos).then(function (documentosAnalizados) {
@@ -204,7 +200,7 @@ router.post('/getDocsPerYear', (req, res, next) => {
 
 function docsPorAnio(words) {
   return new Promise(function (resolve, reject) {
-    search_query = {
+    var search_query = {
       all: words
       //author: 'William Chan'
     };
