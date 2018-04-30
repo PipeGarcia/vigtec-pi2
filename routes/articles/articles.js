@@ -5,7 +5,7 @@ const multer = require('multer');
 const fs = require("fs");
 const config = require('../../config/database');
 const Article = require('../../models/articles');
-arxiv = require('arxiv');
+var arxiv = require('arxiv');
 
 var request = require('request');
 let PDFParser = require("pdf2json");
@@ -49,7 +49,7 @@ router.post('/initChatbot', (req, res, next) => {
     severalWords = false;
   }
 
-  search_query = {
+  var search_query = {
     all: words
     //author: 'William Chan'
   };
@@ -71,7 +71,7 @@ router.post('/initChatbot', (req, res, next) => {
 function getDocumentsPromise(documentos) {
   return new Promise(function (resolve, reject) {
     //arxiv.search(search_query, function (err, results) {
-    var data = [];
+    
     if (documentos.length != 0) {
       for (var i = 0; i < 5; i++) {
 
@@ -249,7 +249,7 @@ router.post('/getDocumentsPerYear', (req, res) => {
 function getFilteredDocsPerAnio(anio) {
   console.log(anio);
   return new Promise(function (resolve, reject) {
-    arrayDocsPerAnio = [];
+    var arrayDocsPerAnio = [];
     for (var i = 0; i < documentosFiltrados.items.length; i++) {
       if (documentosFiltrados.items[i].published.toString().substring(10, 15).trim() == anio.trim()) {
         arrayDocsPerAnio.push(documentosFiltrados.items[i]);
@@ -282,13 +282,12 @@ function docsPorAutor() {
 
   return new Promise(function (resolve, reject) {
     var arreglo = [];
-    var contador = 0;
     var numeroVeces = 1;
     var estaEnArreglo = false;
     var author;
     for (var a = 0; a < 15; a++) {
       author = documentosFiltradosPorAutor[a].authors[0].name.toString()
-      for (i = 0; i < arreglo.length; i++) {
+      for (var i = 0; i < arreglo.length; i++) {
         if (documentosFiltradosPorAutor[a].authors[0].name.toString() ==
           documentosFiltradosPorAutor[i].authors[0].name.toString()) {
           arreglo[i].nroVeces = arreglo[i].nroVeces + 1
