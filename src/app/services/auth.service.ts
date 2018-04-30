@@ -20,7 +20,7 @@ export class AuthService {
   authenticateUser(user){
     const headers = new Headers();
     headers.append('Content-Type','application/json');
-    return this.http.post('http://localhost:3000/users/authenticate', user,{headers: headers})
+    return this.http.post('https://vigtec.herokuapp.com/users/authenticate', user,{headers: headers})
       .map(res => res.json());
   }
 
