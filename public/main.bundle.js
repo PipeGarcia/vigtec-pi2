@@ -443,7 +443,7 @@ module.exports = ""
 /***/ "./src/app/components/dashboard/dashboard.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<h2 class=\"page-header\">Vigtec</h2>\n<div class=\"center\">\n    <input [(ngModel)]=\"sentMessage\" type=\"text\">\n    <button (click)=\"initChat(sentMessage)\">Send your message</button>  \n</div>\n<ng-container *ngFor = \"let message of messages\">\n    <div class=\"message\" [ngClass]=\"{ 'from': message.sentBy === 'bot',\n                                        'to': message.sentBy === 'user'}\">\n    {{ message.content }}\n    </div>\n</ng-container>\n\n<div style=\"position:relative; color:gray\">\n        <h2 *ngIf=\"showSpinner\">\n            Searching...\n        </h2>\n        <spinner-component [spinnerShow]=\"showSpinner\"></spinner-component>\n</div>\n\n<p>{{algo}}</p>\n\n<ol *ngIf=\"query && query.length > 0\" class=\"list\">\n    <li *ngFor = \"let q of query\">\n        {{q.nombreDocumento}} <br> {{q.palabrasClaves}}\n    </li>\n</ol>\n\n<!--<app-statistics [list]=\"query\" *ngIf=\"showStatistics\"></app-statistics>-->\n\n"
+module.exports = "<h2 class=\"page-header\">Vigtec</h2>\n<div class=\"center\">\n    <input [(ngModel)]=\"sentMessage\" type=\"text\">\n    <button (click)=\"getDocumentsPerAnio(sentMessage)\">Send your message</button>  \n</div>\n<ng-container *ngFor = \"let message of messages\">\n    <div class=\"message\" [ngClass]=\"{ 'from': message.sentBy === 'bot',\n                                        'to': message.sentBy === 'user'}\">\n    {{ message.content }}\n    </div>\n</ng-container>\n\n<div style=\"position:relative;color:gray\">\n    <h1 *ngIf=\"showSpinner && !isAnalyzing\">\n      Consultando...  \n    </h1>\n    <h1 *ngIf=\"showSpinner && isAnalyzing\">\n        Realizando análisis...  \n      </h1>\n    <spinner-component [spinnerShow]=\"showSpinner\"></spinner-component>\n</div>\n\n<!--<p>{{algo}}</p>-->\n<button *ngIf=\"(query && query.length > 0) && !showStatistics \" (click)=\"getDocumentsPerAuthor()\">Ver análisis de búsqueda</button>\n<ol *ngIf=\"(query && query.length > 0) && !showStatistics\" class=\"list\">\n    <li *ngFor = \"let q of query\">\n        {{q.nombreDocumento}} <br> {{q.palabrasClaves}}\n    </li>\n</ol>\n\n<app-statistics [list]=\"query\" *ngIf=\"showStatistics\" (anio)=\"initChat($event)\" [isAuthor]=\"isAuthor\"></app-statistics>\n<!--<button (click)=\"getFilteredDocs()\">consultar documentos filtrados</button>-->\n<!--<informacion-consulta [list]=\"query\" *ngIf=\"isSearch && !showStatistics\" (anio)=\"initChat($event)\"></informacion-consulta>-->"
 
 /***/ }),
 
@@ -474,31 +474,40 @@ var DashboardComponent = /** @class */ (function () {
         this.messages = [];
         this.showSpinner = false;
         this.showStatistics = false;
+        this.isAuthor = false;
+        this.isAnalyzing = false;
+        this.isSearch = false;
     }
     DashboardComponent.prototype.ngOnInit = function () {
     };
     DashboardComponent.prototype.initChat = function (mensaje) {
         var _this = this;
-        this.titles = [];
-        this.query = [];
-        this.showSpinner = true;
-        var msg = { 'mensaje': mensaje };
-        this.chatService.initChat(msg).subscribe(function (res) {
-            _this.showSpinner = false;
-            _this.titles = res.titles;
-            _this.query = res.query;
-            _this.algo = res.algo;
-            _this.receivedMessage = res.botMessage;
-            _this.messages.push({ 'sentBy': 'user', 'content': _this.sentMessage }, { 'sentBy': 'bot', 'content': _this.receivedMessage });
-        });
-    };
-    DashboardComponent.prototype.getDocumentsPerAnio = function (mensaje) {
-        var _this = this;
+        this.isAuthor = true;
+        this.isAnalyzing = true;
         this.query = [];
         this.showSpinner = true;
         this.showStatistics = false;
         var msg = { 'mensaje': mensaje };
+        this.chatService.initChat(msg).subscribe(function (res) {
+            _this.showSpinner = false;
+            _this.showStatistics = false;
+            _this.query = res.query;
+            _this.algo = res.algo;
+            _this.receivedMessage = res.botMessage;
+            /*this.messages.push({ 'sentBy': 'user', 'content': this.sentMessage },
+              { 'sentBy': 'bot', 'content': this.receivedMessage });*/
+        }, function (error) { return console.log(error); });
+    };
+    DashboardComponent.prototype.getDocumentsPerAnio = function (mensaje) {
+        var _this = this;
+        this.showStatistics = false;
+        this.isAnalyzing = false;
+        this.query = [];
+        this.showSpinner = true;
+        var msg = { 'mensaje': mensaje };
         this.chatService.getDocumentsPerAnio(msg).subscribe(function (res) {
+            _this.isSearch = true;
+            _this.isAuthor = false;
             _this.showSpinner = false;
             _this.query = res.query;
             _this.algo = res.algo;
@@ -506,6 +515,22 @@ var DashboardComponent = /** @class */ (function () {
             _this.messages.push({ 'sentBy': 'user', 'content': _this.sentMessage }, { 'sentBy': 'bot', 'content': _this.receivedMessage });
             _this.showStatistics = true;
         }, function (error) { console.log('error'); });
+    };
+    DashboardComponent.prototype.getFilteredDocs = function () {
+        this.chatService.getFilteredDocs().subscribe(function (res) {
+            console.log(res);
+        }, function (error) { return console.log(error); });
+    };
+    DashboardComponent.prototype.getDocumentsPerAuthor = function () {
+        var _this = this;
+        this.isAuthor = true;
+        this.showSpinner = true;
+        this.isSearch = false;
+        this.chatService.getDocumentsPerAuthor().subscribe(function (res) {
+            _this.showSpinner = false;
+            _this.showStatistics = true;
+            _this.query = res.data;
+        }, function (error) { return console.log(error); });
     };
     DashboardComponent = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
@@ -898,7 +923,7 @@ module.exports = ""
 /***/ "./src/app/components/statistics/statistics.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div style=\"display: block\">\n    <canvas baseChart\n                [data]=\"doughnutChartData\"\n                [labels]=\"doughnutChartLabels\"\n                [chartType]=\"doughnutChartType\"\n                (chartHover)=\"chartHovered($event)\"\n                (chartClick)=\"chartClicked($event)\"></canvas>\n</div>"
+module.exports = "<div *ngIf=\"showDoughnut\" style=\"display: block\">\n    <canvas baseChart\n                [data]=\"doughnutChartData\"\n                [labels]=\"doughnutChartLabels\"\n                [chartType]=\"doughnutChartType\"\n                (chartHover)=\"chartHovered($event)\"\n                (chartClick)=\"chartClicked($event)\"></canvas>\n  </div>\n  \n  <div *ngIf=\"!showDoughnut\">\n    <div style=\"display: block\">\n      <canvas baseChart\n              [datasets]=\"barChartData\"\n              [labels]=\"barChartLabels\"\n              [options]=\"barChartOptions\"\n              [legend]=\"barChartLegend\"\n              [chartType]=\"barChartType\"\n              (chartHover)=\"chartHovered($event)\"\n              (chartClick)=\"chartClicked($event)\"></canvas>\n    </div>\n  </div>"
 
 /***/ }),
 
@@ -907,7 +932,8 @@ module.exports = "<div style=\"display: block\">\n    <canvas baseChart\n       
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return StatisticsComponent; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("./node_modules/@angular/core/esm5/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__services_chat_service__ = __webpack_require__("./src/app/services/chat.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("./node_modules/@angular/core/esm5/core.js");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -918,36 +944,90 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 
+
 var StatisticsComponent = /** @class */ (function () {
-    function StatisticsComponent() {
+    function StatisticsComponent(chatService) {
+        this.chatService = chatService;
+        this.anio = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["EventEmitter"]();
         this.doughnutChartLabels = [];
         this.doughnutChartData = [];
+        this.showDoughnut = false;
+        this.barChartOptions = {
+            scaleShowVerticalLines: false,
+            responsive: true
+        };
+        this.barChartLabels = [];
+        this.barChartType = 'bar';
+        this.barChartLegend = true;
+        this.barChartData = [
+            { data: [], label: 'Cantidad de documentos por año' }
+        ];
         this.doughnutChartType = 'doughnut';
     }
     StatisticsComponent.prototype.ngOnInit = function () {
+        if (this.isAuthor) {
+            this.showDoughnut = true;
+        }
+        else {
+            this.showDoughnut = false;
+        }
         console.log(this.list);
+        this.getDataToShow();
+    };
+    StatisticsComponent.prototype.getDataToShow = function () {
+        console.log('booleanooooo' + this.isAuthor);
         for (var i = 0; i < this.list.length; i++) {
-            this.doughnutChartLabels.push('Año publicación - ' + this.list[i].anio);
-            this.doughnutChartData.push(this.list[i].nroVeces);
+            if (!this.isAuthor) {
+                console.log('no entro a autor');
+                this.barChartLabels.push('Año publicación - ' + this.list[i].anio);
+                this.barChartData[0].data.push(this.list[i].nroVeces);
+                this.showDoughnut = false;
+            }
+            else {
+                console.log('entro a autor');
+                this.showDoughnut = true;
+                this.doughnutChartLabels.push('Autor - ' + this.list[i].author);
+                this.doughnutChartData.push(this.list[i].nroVeces);
+            }
         }
     };
     StatisticsComponent.prototype.chartClicked = function (e) {
         console.log(e);
+        var anio;
+        if (e.active.length > 0) {
+            if (!this.isAuthor) {
+                anio = this.barChartLabels[e.active[0]._index].split('-');
+            }
+            else {
+                anio = this.doughnutChartLabels[e.active[0]._index].split('-');
+            }
+            var anioFinal = anio[1];
+            console.log(anioFinal);
+            this.anio.emit(anioFinal);
+        }
     };
     StatisticsComponent.prototype.chartHovered = function (e) {
         console.log(e);
     };
     __decorate([
-        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Input"])(),
+        Object(__WEBPACK_IMPORTED_MODULE_1__angular_core__["Input"])(),
         __metadata("design:type", Object)
     ], StatisticsComponent.prototype, "list", void 0);
+    __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_1__angular_core__["Output"])(),
+        __metadata("design:type", Object)
+    ], StatisticsComponent.prototype, "anio", void 0);
+    __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_1__angular_core__["Input"])(),
+        __metadata("design:type", Boolean)
+    ], StatisticsComponent.prototype, "isAuthor", void 0);
     StatisticsComponent = __decorate([
-        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
+        Object(__WEBPACK_IMPORTED_MODULE_1__angular_core__["Component"])({
             selector: 'app-statistics',
             template: __webpack_require__("./src/app/components/statistics/statistics.component.html"),
             styles: [__webpack_require__("./src/app/components/statistics/statistics.component.css")]
         }),
-        __metadata("design:paramtypes", [])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_0__services_chat_service__["a" /* ChatService */]])
     ], StatisticsComponent);
     return StatisticsComponent;
 }());
@@ -1203,12 +1283,24 @@ var ChatService = /** @class */ (function () {
         return this.http.post('/articles/initChatbot', message)
             .map(function (res) { return res.json(); });
     };
-    /*getDocumentList(message) {
-      return this.http.post('/articles/getDocumentList', message)
-        .map(res => res.json());
-    }*/
+    ChatService.prototype.getDocumentList = function (message) {
+        return this.http.get('/articles/getDocumentList', message)
+            .map(function (res) { return res.json(); });
+    };
     ChatService.prototype.getDocumentsPerAnio = function (message) {
         return this.http.post('/articles/getDocsPerYear', message)
+            .map(function (res) { return res.json(); });
+    };
+    ChatService.prototype.getFilteredDocs = function () {
+        return this.http.get('/articles/getFilteredDocs')
+            .map(function (res) { return res.json(); });
+    };
+    ChatService.prototype.getDocsPerAnioForStatistics = function (message) {
+        return this.http.post('/articles/getDocumentsPerYear', message)
+            .map(function (res) { return res.json(); });
+    };
+    ChatService.prototype.getDocumentsPerAuthor = function () {
+        return this.http.get('/articles/getDocsPerAuthor')
             .map(function (res) { return res.json(); });
     };
     ChatService = __decorate([

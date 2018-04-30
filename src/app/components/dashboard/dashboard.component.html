@@ -1,7 +1,7 @@
 <h2 class="page-header">Vigtec</h2>
 <div class="center">
     <input [(ngModel)]="sentMessage" type="text">
-    <button (click)="initChat(sentMessage)">Send your message</button>  
+    <button (click)="getDocumentsPerAnio(sentMessage)">Send your message</button>  
 </div>
 <ng-container *ngFor = "let message of messages">
     <div class="message" [ngClass]="{ 'from': message.sentBy === 'bot',
@@ -10,20 +10,24 @@
     </div>
 </ng-container>
 
-<div style="position:relative; color:gray">
-        <h2 *ngIf="showSpinner">
-            Searching...
-        </h2>
-        <spinner-component [spinnerShow]="showSpinner"></spinner-component>
+<div style="position:relative;color:gray">
+    <h1 *ngIf="showSpinner && !isAnalyzing">
+      Consultando...  
+    </h1>
+    <h1 *ngIf="showSpinner && isAnalyzing">
+        Realizando análisis...  
+      </h1>
+    <spinner-component [spinnerShow]="showSpinner"></spinner-component>
 </div>
 
-<p>{{algo}}</p>
-
-<ol *ngIf="query && query.length > 0" class="list">
+<!--<p>{{algo}}</p>-->
+<button *ngIf="(query && query.length > 0) && !showStatistics " (click)="getDocumentsPerAuthor()">Ver análisis de búsqueda</button>
+<ol *ngIf="(query && query.length > 0) && !showStatistics" class="list">
     <li *ngFor = "let q of query">
         {{q.nombreDocumento}} <br> {{q.palabrasClaves}}
     </li>
 </ol>
 
-<!--<app-statistics [list]="query" *ngIf="showStatistics"></app-statistics>-->
-
+<app-statistics [list]="query" *ngIf="showStatistics" (anio)="initChat($event)" [isAuthor]="isAuthor"></app-statistics>
+<!--<button (click)="getFilteredDocs()">consultar documentos filtrados</button>-->
+<!--<informacion-consulta [list]="query" *ngIf="isSearch && !showStatistics" (anio)="initChat($event)"></informacion-consulta>-->

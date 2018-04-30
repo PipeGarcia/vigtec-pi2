@@ -12,13 +12,29 @@ export class ChatService {
       .map(res => res.json());
   }
 
-  /*getDocumentList(message) {
-    return this.http.post('/articles/getDocumentList', message)
+  getDocumentList(message) {
+    return this.http.get('/articles/getDocumentList', message)
       .map(res => res.json());
-  }*/
+  }
 
   getDocumentsPerAnio(message) {
     return this.http.post('/articles/getDocsPerYear', message)
       .map(res => res.json());
   }
+
+  getFilteredDocs() {
+    return this.http.get('/articles/getFilteredDocs')
+      .map(res => res.json());
+  }
+
+  getDocsPerAnioForStatistics(message) {
+    return this.http.post('/articles/getDocumentsPerYear', message)
+      .map(res => res.json());
+  }
+
+  getDocumentsPerAuthor() {
+    return this.http.get('/articles/getDocsPerAuthor')
+      .map(res => res.json());
+  }
+
 }
