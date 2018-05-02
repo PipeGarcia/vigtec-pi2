@@ -443,7 +443,7 @@ module.exports = ""
 /***/ "./src/app/components/dashboard/dashboard.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<h2 class=\"page-header\">Vigtec</h2>\n<div class=\"center\">\n    <input [(ngModel)]=\"sentMessage\" type=\"text\">\n    <button (click)=\"getDocumentsPerAnio(sentMessage)\">Send your message</button>  \n</div>\n<ng-container *ngFor = \"let message of messages\">\n    <div class=\"message\" [ngClass]=\"{ 'from': message.sentBy === 'bot',\n                                        'to': message.sentBy === 'user'}\">\n    {{ message.content }}\n    </div>\n</ng-container>\n\n<div style=\"position:relative;color:gray\">\n    <h1 *ngIf=\"showSpinner && !isAnalyzing\">\n      Consultando...  \n    </h1>\n    <h1 *ngIf=\"showSpinner && isAnalyzing\">\n        Realizando análisis...  \n      </h1>\n    <spinner-component [spinnerShow]=\"showSpinner\"></spinner-component>\n</div>\n\n<!--<p>{{algo}}</p>-->\n<button *ngIf=\"(query && query.length > 0) && !showStatistics \" (click)=\"getDocumentsPerAuthor()\">Ver análisis de búsqueda</button>\n<ol *ngIf=\"(query && query.length > 0) && !showStatistics\" class=\"list\">\n    <li *ngFor = \"let q of query\">\n        {{q.nombreDocumento}} <br> {{q.palabrasClaves}}\n    </li>\n</ol>\n\n<app-statistics [list]=\"query\" *ngIf=\"showStatistics\" (anio)=\"initChat($event)\" [isAuthor]=\"isAuthor\"></app-statistics>\n<!--<button (click)=\"getFilteredDocs()\">consultar documentos filtrados</button>-->\n<!--<informacion-consulta [list]=\"query\" *ngIf=\"isSearch && !showStatistics\" (anio)=\"initChat($event)\"></informacion-consulta>-->"
+module.exports = "<h2 class=\"page-header\">Vigtec</h2>\n<div class=\"center\">\n    <input [(ngModel)]=\"sentMessage\" type=\"text\">\n    <button (click)=\"getDocumentsPerAnio(sentMessage)\">Send your message</button>  \n</div>\n<!--<ng-container *ngFor = \"let message of messages\">\n    <div class=\"message\" [ngClass]=\"{ 'from': message.sentBy === 'bot',\n                                        'to': message.sentBy === 'user'}\">\n    {{ message.content }}\n    </div>\n</ng-container>-->\n\n<div style=\"position:relative;color:gray\">\n    <h1 *ngIf=\"showSpinner && !isAnalyzing\">\n      Consultando...  \n    </h1>\n    <h1 *ngIf=\"showSpinner && isAnalyzing\">\n        Realizando análisis...  \n      </h1>\n    <spinner-component [spinnerShow]=\"showSpinner\"></spinner-component>\n</div>\n\n<!--<p>{{algo}}</p>-->\n<button *ngIf=\"(query && query.length > 0) && !showStatistics \" (click)=\"getDocumentsPerAuthor()\">Ver análisis de búsqueda</button>\n<ol *ngIf=\"(query && query.length > 0) && !showStatistics\" class=\"list\">\n    <li *ngFor = \"let q of query\">\n        {{q.nombreDocumento}} <br> {{q.palabrasClaves}}\n    </li>\n</ol>\n\n<app-statistics [list]=\"query\" *ngIf=\"showStatistics\" (anio)=\"initChat($event)\" [isAuthor]=\"isAuthor\"></app-statistics>\n<!--<button (click)=\"getFilteredDocs()\">consultar documentos filtrados</button>-->\n<!--<informacion-consulta [list]=\"query\" *ngIf=\"isSearch && !showStatistics\" (anio)=\"initChat($event)\"></informacion-consulta>-->"
 
 /***/ }),
 
@@ -1209,13 +1209,13 @@ var AuthService = /** @class */ (function () {
     AuthService.prototype.registerUser = function (user) {
         var headers = new __WEBPACK_IMPORTED_MODULE_1__angular_http__["Headers"]();
         headers.append('Content-Type', 'application/json');
-        return this.http.post('http://localhost:3000/users/register', user, { headers: headers })
+        return this.http.post('https://vigtec.herokuapp.com/users/register', user, { headers: headers })
             .map(function (res) { return res.json(); });
     };
     AuthService.prototype.authenticateUser = function (user) {
         var headers = new __WEBPACK_IMPORTED_MODULE_1__angular_http__["Headers"]();
         headers.append('Content-Type', 'application/json');
-        return this.http.post('http://localhost:3000/users/authenticate', user, { headers: headers })
+        return this.http.post('https://vigtec.herokuapp.com/users/authenticate', user, { headers: headers })
             .map(function (res) { return res.json(); });
     };
     AuthService.prototype.getProfile = function () {
@@ -1223,7 +1223,7 @@ var AuthService = /** @class */ (function () {
         this.loadToken();
         headers.append('Authorization', this.authToken);
         headers.append('Content-Type', 'application/json');
-        return this.http.get('http://localhost:3000/users/profile', { headers: headers })
+        return this.http.get('https://vigtec.herokuapp.com/users/profile', { headers: headers })
             .map(function (res) { return res.json(); });
     };
     AuthService.prototype.storeUserData = function (token, user) {

@@ -3,12 +3,12 @@
     <input [(ngModel)]="sentMessage" type="text">
     <button (click)="getDocumentsPerAnio(sentMessage)">Send your message</button>  
 </div>
-<ng-container *ngFor = "let message of messages">
+<!--<ng-container *ngFor = "let message of messages">
     <div class="message" [ngClass]="{ 'from': message.sentBy === 'bot',
                                         'to': message.sentBy === 'user'}">
     {{ message.content }}
     </div>
-</ng-container>
+</ng-container>-->
 
 <div style="position:relative;color:gray">
     <h1 *ngIf="showSpinner && !isAnalyzing">
