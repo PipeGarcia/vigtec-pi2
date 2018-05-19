@@ -87,9 +87,9 @@ function getDocumentsPromise(documentos) {
         }
         request(options).pipe(pdfParser);
         var contenido;
-        pdfParser.on("pdfParser_dataError", errData => console.error(errData.parserError));
-        pdfParser.on("pdfParser_dataReady", pdfData => {
-          contenido = pdfParser.getRawTextContent();
+        //pdfParser.on("pdfParser_dataError", errData => console.error(errData.parserError));
+        //pdfParser.on("pdfParser_dataReady", pdfData => {
+          contenido = documentos[i].summary;
           var parameters = getParameters(contenido);
           natural_language_understanding.analyze(parameters, function (err, response) {
             if (err)
@@ -105,7 +105,7 @@ function getDocumentsPromise(documentos) {
               resolve(documentosAnalizados);
             }
           });
-        });
+        //});
       }
     }
   })
@@ -218,7 +218,6 @@ function docsPorAnio(words) {
       var numeroVeces = 0;
       for (var a = 0; a < results.items.length; a++) {
         var anio = results.items[contador].published.toString().substring(10, 15)
-        //console.log(results.items[a].published.toString().substring(10, 15));
         if (anio == results.items[a].published.toString().substring(10, 15)) {
           numeroVeces = numeroVeces + 1;
         } else {
@@ -230,6 +229,12 @@ function docsPorAnio(words) {
           numeroVeces = 0;
         }
         if (a == results.items.length - 1) {
+          if (arreglo.length == 0) {
+            arreglo.push({
+              'anio': anio,
+              'nroVeces': numeroVeces
+            });
+          }
           resolve(arreglo);
         }
       }
@@ -253,6 +258,7 @@ function getFilteredDocsPerAnio(anio) {
   console.log(anio);
   return new Promise(function (resolve, reject) {
     arrayDocsPerAnio = [];
+    console.log("nro de docs " + documentosFiltrados.items.length);
     for (var i = 0; i < documentosFiltrados.items.length; i++) {
       if (documentosFiltrados.items[i].published.toString().substring(10, 15).trim() == anio.trim()) {
         arrayDocsPerAnio.push(documentosFiltrados.items[i]);
@@ -328,7 +334,7 @@ function agruparDocsConKmeans(palabras) {
     documentos = [];
     retornarDocumentos().then(function (tfidf) {
       //tfidf.tfidfs(['blockchain', 'bitcoin, tech'], function (i, measure) {
-        tfidf.tfidfs(palabras, function (i, measure) {
+      tfidf.tfidfs(palabras, function (i, measure) {
         documentos.push({
           'nombre': '#' + i,
           'relevancia': measure
@@ -336,7 +342,7 @@ function agruparDocsConKmeans(palabras) {
         //console.log('document #' + i + ' is ' + measure);
       });
       analisisKmeans(documentos).then(data => {
-        organizarLista(data).then(function(listaFinal){
+        organizarLista(data).then(function (listaFinal) {
           resolve(listaFinal);
         });
       });
@@ -395,7 +401,7 @@ function organizarLista(lista) {
       for (j = 0; j < lista[i].clusterInd.length; j++) {
         listaFinal[elemento]['elementos'].push({
           "nombre": documentosFiltradosPorAnio[lista[i].clusterInd[j]].title,
-          "anio": documentosFiltradosPorAnio[lista[i].clusterInd[j]].published.toString().substring(0,15),
+          "anio": documentosFiltradosPorAnio[lista[i].clusterInd[j]].published.toString().substring(0, 15),
           "link": documentosFiltradosPorAnio[lista[i].clusterInd[j]].links[1].href
         });
       }
