@@ -37,4 +37,9 @@ export class ChatService {
       .map(res => res.json());
   }
 
+  getAllDocuments(message) {
+    return this.http.post('/articles/getAllDocuments', message)
+      .map(res => res.json());
+  }
+
 }

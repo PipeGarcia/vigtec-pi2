@@ -443,7 +443,7 @@ module.exports = ""
 /***/ "./src/app/components/dashboard/dashboard.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<h2 class=\"page-header\">Vigtec</h2>\n<div class=\"center\">\n    <input [(ngModel)]=\"sentMessage\" type=\"text\">\n    <button (click)=\"getDocumentsPerAnio(sentMessage)\">Send your message</button>  \n</div>\n<!--<ng-container *ngFor = \"let message of messages\">\n    <div class=\"message\" [ngClass]=\"{ 'from': message.sentBy === 'bot',\n                                        'to': message.sentBy === 'user'}\">\n    {{ message.content }}\n    </div>\n</ng-container>-->\n\n<div style=\"position:relative;color:gray\">\n    <h1 *ngIf=\"showSpinner && !isAnalyzing\">\n      Consultando...  \n    </h1>\n    <h1 *ngIf=\"showSpinner && isAnalyzing\">\n        Realizando análisis...  \n      </h1>\n    <spinner-component [spinnerShow]=\"showSpinner\"></spinner-component>\n</div>\n\n<!--<p>{{algo}}</p>-->\n<button *ngIf=\"(query && query.length > 0) && !showStatistics \" (click)=\"getDocumentsPerAuthor()\">Ver análisis de búsqueda</button>\n<ol *ngIf=\"(query && query.length > 0) && !showStatistics\" class=\"list\">\n    <li *ngFor = \"let q of query\">\n        {{q.nombreDocumento}} <br> {{q.palabrasClaves}}\n    </li>\n</ol>\n\n<app-statistics [list]=\"query\" *ngIf=\"showStatistics\" (anio)=\"initChat($event)\" [isAuthor]=\"isAuthor\"></app-statistics>\n<!--<button (click)=\"getFilteredDocs()\">consultar documentos filtrados</button>-->\n<!--<informacion-consulta [list]=\"query\" *ngIf=\"isSearch && !showStatistics\" (anio)=\"initChat($event)\"></informacion-consulta>-->"
+module.exports = "<h2 class=\"page-header\">Vigtec</h2>\n<div class=\"center\">\n  <input [(ngModel)]=\"sentMessage\" type=\"text\">\n  <button (click)=\"getDocumentsPerAnio(sentMessage)\">Send your message</button>\n  <!--<button (click)=\"getAllDocuments(sentMessage)\">Send your message</button>-->\n</div>\n<!--<ng-container *ngFor = \"let message of messages\">\n    <div class=\"message\" [ngClass]=\"{ 'from': message.sentBy === 'bot',\n                                        'to': message.sentBy === 'user'}\">\n    {{ message.content }}\n    </div>\n</ng-container>-->\n\n<div style=\"position:relative;color:gray\">\n  <h1 *ngIf=\"showSpinner && !isAnalyzing\">\n    Consultando...\n  </h1>\n  <h1 *ngIf=\"showSpinner && isAnalyzing\">\n    Realizando análisis...\n  </h1>\n  <spinner-component [spinnerShow]=\"showSpinner\"></spinner-component>\n</div>\n\n<!--<p>{{algo}}</p>-->\n<div *ngIf=\"(query && query.length > 0) && !showStatistics \" data-tip=\"Ingrese las palabras separadas por coma y sin espacios\"\n  style=\"margin: left;width: 50%;padding: 10px;\">\n  <input type=\"text\" name=\"test\" [(ngModel)]=\"listaPalabras\"/>\n</div>\n<button *ngIf=\"(query && query.length > 0) && !showStatistics \" (click)=\"getAllDocuments(listaPalabras)\">Agrupar documentos</button>\n<ol *ngIf=\"(query && query.length > 0) && !showStatistics && !mostrarAgrupacion\" class=\"list\">\n  <li *ngFor=\"let q of query\">\n    {{q.nombreDocumento}}\n    <br>\n    <ul *ngFor=\"let palabra of q.palabrasClaves\">\n      <li>\n        <a (click)=\"getDocumentsPerAnio(palabra)\">{{palabra}}</a>\n      </li>\n    </ul>\n  </li>\n</ol>\n\n<div *ngIf=\"mostrarAgrupacion\">\n  <h2>Grupo 1</h2>\n  <ol>\n    <li *ngFor=\"let elem1 of grupo1\">\n      <a target=\"_blank\" (click)=\"onNavigate(elem1.link)\">{{elem1.nombre}} - {{elem1.anio}}</a>\n    </li>\n  </ol>\n  <h2>Grupo 2</h2>\n  <ol>\n    <li *ngFor=\"let elem2 of grupo2\">\n      <a target=\"_blank\" href={{elem2.link}}>{{elem2.nombre}} - {{elem2.anio}}</a>\n    </li>\n  </ol>\n  <h2>Grupo 3</h2>\n  <ol>\n    <li *ngFor=\"let elem3 of grupo3\">\n      <a target=\"_blank\" href=\"{{elem3.link}}\">{{elem3.nombre}} - {{elem3.anio}}</a>\n    </li>\n  </ol>\n</div>\n<app-statistics [list]=\"query\" *ngIf=\"showStatistics\" (anio)=\"initChat($event)\" [isAuthor]=\"isAuthor\"></app-statistics>\n<!--<button (click)=\"getFilteredDocs()\">consultar documentos filtrados</button>-->\n<!--<informacion-consulta [list]=\"query\" *ngIf=\"isSearch && !showStatistics\" (anio)=\"initChat($event)\"></informacion-consulta>-->\n"
 
 /***/ }),
 
@@ -477,11 +477,17 @@ var DashboardComponent = /** @class */ (function () {
         this.isAuthor = false;
         this.isAnalyzing = false;
         this.isSearch = false;
+        this.grupo1 = [];
+        this.grupo2 = [];
+        this.grupo3 = [];
+        this.mostrarAgrupacion = false;
+        this.listaPalabras = '';
     }
     DashboardComponent.prototype.ngOnInit = function () {
     };
     DashboardComponent.prototype.initChat = function (mensaje) {
         var _this = this;
+        this.mostrarAgrupacion = false;
         this.isAuthor = true;
         this.isAnalyzing = true;
         this.query = [];
@@ -500,6 +506,7 @@ var DashboardComponent = /** @class */ (function () {
     };
     DashboardComponent.prototype.getDocumentsPerAnio = function (mensaje) {
         var _this = this;
+        this.mostrarAgrupacion = false;
         this.showStatistics = false;
         this.isAnalyzing = false;
         this.query = [];
@@ -531,6 +538,35 @@ var DashboardComponent = /** @class */ (function () {
             _this.showStatistics = true;
             _this.query = res.data;
         }, function (error) { return console.log(error); });
+    };
+    DashboardComponent.prototype.getAllDocuments = function (mensaje) {
+        var _this = this;
+        var json = { 'mensaje': mensaje };
+        this.chatService.getAllDocuments(json).subscribe(function (res) {
+            console.log(res);
+            _this.organizarListasDeDocumentos(res);
+            _this.mostrarAgrupacion = true;
+        }, function (error) { return console.log(error); });
+    };
+    DashboardComponent.prototype.buscarPorPalabra = function (palabra) {
+        console.log(palabra);
+    };
+    DashboardComponent.prototype.organizarListasDeDocumentos = function (json) {
+        var data0 = json.data.elemento0.elementos;
+        var data1 = json.data.elemento1.elementos;
+        var data2 = json.data.elemento2.elementos;
+        for (var i in data0) {
+            this.grupo1.push({ 'nombre': data0[i].nombre, 'anio': data0[i].anio, 'link': data0[i].link });
+        }
+        for (var i in data1) {
+            this.grupo2.push({ 'nombre': data1[i].nombre, 'anio': data1[i].anio, 'link': data1[i].link });
+        }
+        for (var i in data2) {
+            this.grupo3.push({ 'nombre': data2[i].nombre, 'anio': data2[i].anio, 'link': data2[i].link });
+        }
+    };
+    DashboardComponent.prototype.onNavigate = function (link) {
+        window.open(link, '_blank');
     };
     DashboardComponent = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
@@ -1206,16 +1242,18 @@ var AuthService = /** @class */ (function () {
     function AuthService(http) {
         this.http = http;
     }
+    // Reemplazar esta url en los 3 metodos --> https://vigtec.herokuapp.com
+    // Ejemplo: https://vigtec.herokuapp.com/users/register
     AuthService.prototype.registerUser = function (user) {
         var headers = new __WEBPACK_IMPORTED_MODULE_1__angular_http__["Headers"]();
         headers.append('Content-Type', 'application/json');
-        return this.http.post('https://vigtec.herokuapp.com/users/register', user, { headers: headers })
+        return this.http.post('http://localhost:3000/users/register', user, { headers: headers })
             .map(function (res) { return res.json(); });
     };
     AuthService.prototype.authenticateUser = function (user) {
         var headers = new __WEBPACK_IMPORTED_MODULE_1__angular_http__["Headers"]();
         headers.append('Content-Type', 'application/json');
-        return this.http.post('https://vigtec.herokuapp.com/users/authenticate', user, { headers: headers })
+        return this.http.post('http://localhost:3000/users/authenticate', user, { headers: headers })
             .map(function (res) { return res.json(); });
     };
     AuthService.prototype.getProfile = function () {
@@ -1223,7 +1261,7 @@ var AuthService = /** @class */ (function () {
         this.loadToken();
         headers.append('Authorization', this.authToken);
         headers.append('Content-Type', 'application/json');
-        return this.http.get('https://vigtec.herokuapp.com/users/profile', { headers: headers })
+        return this.http.get('http://localhost:3000/users/profile', { headers: headers })
             .map(function (res) { return res.json(); });
     };
     AuthService.prototype.storeUserData = function (token, user) {
@@ -1301,6 +1339,10 @@ var ChatService = /** @class */ (function () {
     };
     ChatService.prototype.getDocumentsPerAuthor = function () {
         return this.http.get('/articles/getDocsPerAuthor')
+            .map(function (res) { return res.json(); });
+    };
+    ChatService.prototype.getAllDocuments = function (message) {
+        return this.http.post('/articles/getAllDocuments', message)
             .map(function (res) { return res.json(); });
     };
     ChatService = __decorate([

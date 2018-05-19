@@ -1,7 +1,8 @@
 <h2 class="page-header">Vigtec</h2>
 <div class="center">
-    <input [(ngModel)]="sentMessage" type="text">
-    <button (click)="getDocumentsPerAnio(sentMessage)">Send your message</button>  
+  <input [(ngModel)]="sentMessage" type="text">
+  <button (click)="getDocumentsPerAnio(sentMessage)">Send your message</button>
+  <!--<button (click)="getAllDocuments(sentMessage)">Send your message</button>-->
 </div>
 <!--<ng-container *ngFor = "let message of messages">
     <div class="message" [ngClass]="{ 'from': message.sentBy === 'bot',
@@ -11,23 +12,53 @@
 </ng-container>-->
 
 <div style="position:relative;color:gray">
-    <h1 *ngIf="showSpinner && !isAnalyzing">
-      Consultando...  
-    </h1>
-    <h1 *ngIf="showSpinner && isAnalyzing">
-        Realizando análisis...  
-      </h1>
-    <spinner-component [spinnerShow]="showSpinner"></spinner-component>
+  <h1 *ngIf="showSpinner && !isAnalyzing">
+    Consultando...
+  </h1>
+  <h1 *ngIf="showSpinner && isAnalyzing">
+    Realizando análisis...
+  </h1>
+  <spinner-component [spinnerShow]="showSpinner"></spinner-component>
 </div>
 
 <!--<p>{{algo}}</p>-->
-<button *ngIf="(query && query.length > 0) && !showStatistics " (click)="getDocumentsPerAuthor()">Ver análisis de búsqueda</button>
-<ol *ngIf="(query && query.length > 0) && !showStatistics" class="list">
-    <li *ngFor = "let q of query">
-        {{q.nombreDocumento}} <br> {{q.palabrasClaves}}
-    </li>
+<div *ngIf="(query && query.length > 0) && !showStatistics " data-tip="Ingrese las palabras separadas por coma y sin espacios"
+  style="margin: left;width: 50%;padding: 10px;">
+  <input type="text" name="test" [(ngModel)]="listaPalabras"/>
+</div>
+<button *ngIf="(query && query.length > 0) && !showStatistics " (click)="getAllDocuments(listaPalabras)">Agrupar documentos</button>
+<ol *ngIf="(query && query.length > 0) && !showStatistics && !mostrarAgrupacion" class="list">
+  <li *ngFor="let q of query">
+    {{q.nombreDocumento}}
+    <br>
+    <ul *ngFor="let palabra of q.palabrasClaves">
+      <li>
+        <a (click)="getDocumentsPerAnio(palabra)">{{palabra}}</a>
+      </li>
+    </ul>
+  </li>
 </ol>
 
+<div *ngIf="mostrarAgrupacion">
+  <h2>Grupo 1</h2>
+  <ol>
+    <li *ngFor="let elem1 of grupo1">
+      <a target="_blank" (click)="onNavigate(elem1.link)">{{elem1.nombre}} - {{elem1.anio}}</a>
+    </li>
+  </ol>
+  <h2>Grupo 2</h2>
+  <ol>
+    <li *ngFor="let elem2 of grupo2">
+      <a target="_blank" href={{elem2.link}}>{{elem2.nombre}} - {{elem2.anio}}</a>
+    </li>
+  </ol>
+  <h2>Grupo 3</h2>
+  <ol>
+    <li *ngFor="let elem3 of grupo3">
+      <a target="_blank" href="{{elem3.link}}">{{elem3.nombre}} - {{elem3.anio}}</a>
+    </li>
+  </ol>
+</div>
 <app-statistics [list]="query" *ngIf="showStatistics" (anio)="initChat($event)" [isAuthor]="isAuthor"></app-statistics>
 <!--<button (click)="getFilteredDocs()">consultar documentos filtrados</button>-->
 <!--<informacion-consulta [list]="query" *ngIf="isSearch && !showStatistics" (anio)="initChat($event)"></informacion-consulta>-->

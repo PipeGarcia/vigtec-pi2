@@ -10,17 +10,20 @@ export class AuthService {
 
   constructor(private http:Http) { }
 
+  // Reemplazar esta url en los 3 metodos --> https://vigtec.herokuapp.com
+  // Ejemplo: https://vigtec.herokuapp.com/users/register
+
   registerUser(user){
     const headers = new Headers();
     headers.append('Content-Type','application/json');
-    return this.http.post('https://vigtec.herokuapp.com/users/register', user,{headers: headers})
+    return this.http.post('http://localhost:3000/users/register', user,{headers: headers})
       .map(res => res.json());
   }
 
   authenticateUser(user){
     const headers = new Headers();
     headers.append('Content-Type','application/json');
-    return this.http.post('https://vigtec.herokuapp.com/users/authenticate', user,{headers: headers})
+    return this.http.post('http://localhost:3000/users/authenticate', user,{headers: headers})
       .map(res => res.json());
   }
 
@@ -29,7 +32,7 @@ export class AuthService {
     this.loadToken();
     headers.append('Authorization', this.authToken);
     headers.append('Content-Type', 'application/json');
-    return this.http.get('https://vigtec.herokuapp.com/users/profile', {headers: headers})
+    return this.http.get('http://localhost:3000/users/profile', {headers: headers})
       .map(res => res.json());
   }
 

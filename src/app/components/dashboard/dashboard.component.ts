@@ -19,6 +19,11 @@ export class DashboardComponent implements OnInit {
   isAuthor = false;
   isAnalyzing = false;
   isSearch = false;
+  grupo1 = [];
+  grupo2 = [];
+  grupo3 = [];
+  mostrarAgrupacion = false;
+  listaPalabras = '';
 
   constructor(private chatService: ChatService) { }
 
@@ -26,6 +31,7 @@ export class DashboardComponent implements OnInit {
   }
 
   initChat(mensaje) {
+    this.mostrarAgrupacion = false;
     this.isAuthor = true;
     this.isAnalyzing = true;
     this.query = [];
@@ -46,6 +52,7 @@ export class DashboardComponent implements OnInit {
   }
 
   getDocumentsPerAnio(mensaje) {
+    this.mostrarAgrupacion = false;
     this.showStatistics = false;
     this.isAnalyzing = false;
     this.query = [];
@@ -81,6 +88,41 @@ export class DashboardComponent implements OnInit {
       this.showStatistics = true;
       this.query = res.data;
     }, error => console.log(error));
+  }
+
+  getAllDocuments(mensaje) {
+    const json = { 'mensaje': mensaje };
+    this.chatService.getAllDocuments(json).subscribe(res => {
+      console.log(res);
+      this.organizarListasDeDocumentos(res);
+      this.mostrarAgrupacion = true;
+    }, error => console.log(error));
+  }
+
+  buscarPorPalabra(palabra) {
+    console.log(palabra);
+  }
+
+  organizarListasDeDocumentos(json) {
+    const data0 = json.data.elemento0.elementos;
+    const data1 = json.data.elemento1.elementos;
+    const data2 = json.data.elemento2.elementos;
+
+    for (var i in data0) {
+      this.grupo1.push({ 'nombre': data0[i].nombre, 'anio': data0[i].anio , 'link': data0[i].link});
+    }
+
+    for (var i in data1) {
+      this.grupo2.push({ 'nombre': data1[i].nombre, 'anio': data1[i].anio, 'link':data1[i].link});
+    }
+
+    for (var i in data2) {
+      this.grupo3.push({ 'nombre': data2[i].nombre, 'anio': data2[i].anio, 'link': data2[i].link });
+    }
+  }
+
+  onNavigate(link) {
+    window.open(link, '_blank');
   }
 
 }

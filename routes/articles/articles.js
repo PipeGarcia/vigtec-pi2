@@ -5,8 +5,10 @@ const multer = require('multer');
 const fs = require("fs");
 const config = require('../../config/database');
 const Article = require('../../models/articles');
-var arxiv = require('arxiv');
-
+arxiv = require('arxiv');
+var TfIdf = require('node-tfidf');
+var tfidf = new TfIdf();
+const kmeans = require('node-kmeans');
 var request = require('request');
 let PDFParser = require("pdf2json");
 //let pdfParser = new PDFParser(this,1);
@@ -23,7 +25,7 @@ var severalWords = false;
 
 var documentosAnalizados = [];
 var documentosFiltrados = [];
-var documentosFiltradosPorAutor = [];
+var documentosFiltradosPorAnio = [];
 
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -49,7 +51,11 @@ router.post('/initChatbot', (req, res, next) => {
     severalWords = false;
   }
 
-  
+  search_query = {
+    all: words
+    //author: 'William Chan'
+  };
+
   getFilteredDocsPerAnio(req.body.mensaje).then(function (documentos) {
     console.log(documentos.length);
     getDocumentsPromise(documentos).then(function (documentosAnalizados) {
@@ -67,7 +73,7 @@ router.post('/initChatbot', (req, res, next) => {
 function getDocumentsPromise(documentos) {
   return new Promise(function (resolve, reject) {
     //arxiv.search(search_query, function (err, results) {
-    
+    var data = [];
     if (documentos.length != 0) {
       for (var i = 0; i < 5; i++) {
 
@@ -102,7 +108,7 @@ function getDocumentsPromise(documentos) {
         });
       }
     }
-    })
+  })
   //})
 
 }
@@ -198,9 +204,10 @@ router.post('/getDocsPerYear', (req, res, next) => {
   });
 });
 
+//primera búsqueda, muestra la barra con los docs por año
 function docsPorAnio(words) {
   return new Promise(function (resolve, reject) {
-    var search_query = {
+    search_query = {
       all: words
       //author: 'William Chan'
     };
@@ -245,13 +252,13 @@ router.post('/getDocumentsPerYear', (req, res) => {
 function getFilteredDocsPerAnio(anio) {
   console.log(anio);
   return new Promise(function (resolve, reject) {
-    var arrayDocsPerAnio = [];
+    arrayDocsPerAnio = [];
     for (var i = 0; i < documentosFiltrados.items.length; i++) {
       if (documentosFiltrados.items[i].published.toString().substring(10, 15).trim() == anio.trim()) {
         arrayDocsPerAnio.push(documentosFiltrados.items[i]);
       }
     }
-    documentosFiltradosPorAutor = arrayDocsPerAnio;
+    documentosFiltradosPorAnio = arrayDocsPerAnio;
     resolve(arrayDocsPerAnio);
     //console.log(arrayDocsPerAnio.length);
   })
@@ -269,23 +276,18 @@ router.get('/getDocsPerAuthor', (req, res) => {
 });
 
 function docsPorAutor() {
-  /*for(var i = 0; i < 115; i++) {
-    if(documentosFiltradosPorAutor[i].authors[0].name.toString() == 'Arlindo Flavio da Conceição') {
-      console.log(i);
-    }
-    console.log(documentosFiltradosPorAutor[i].authors);
-  }*/
 
   return new Promise(function (resolve, reject) {
     var arreglo = [];
+    var contador = 0;
     var numeroVeces = 1;
     var estaEnArreglo = false;
     var author;
     for (var a = 0; a < 15; a++) {
-      author = documentosFiltradosPorAutor[a].authors[0].name.toString()
-      for (var i = 0; i < arreglo.length; i++) {
-        if (documentosFiltradosPorAutor[a].authors[0].name.toString() ==
-          documentosFiltradosPorAutor[i].authors[0].name.toString()) {
+      author = documentosFiltradosPorAnio[a].authors[0].name.toString()
+      for (i = 0; i < arreglo.length; i++) {
+        if (documentosFiltradosPorAnio[a].authors[0].name.toString() ==
+          documentosFiltradosPorAnio[i].authors[0].name.toString()) {
           arreglo[i].nroVeces = arreglo[i].nroVeces + 1
           estaEnArreglo = true;
         } else {
@@ -293,7 +295,7 @@ function docsPorAutor() {
         }
       }
 
-      if(!estaEnArreglo) {
+      if (!estaEnArreglo) {
         arreglo.push({
           'author': author,
           'nroVeces': numeroVeces
@@ -307,6 +309,100 @@ function docsPorAutor() {
     }
     //console.log(arreglo);
   })
+}
+
+router.post('/getAllDocuments', (req, res) => {
+  listaPalabras = req.body.mensaje.split(",");
+  console.log(listaPalabras);
+  agruparDocsConKmeans(listaPalabras).then(function (data) {
+    //console.log(JSON.stringify(data));
+    res.send({
+      'data': data
+    });
+  });
+});
+
+
+function agruparDocsConKmeans(palabras) {
+  return new Promise(function (resolve, reject) {
+    documentos = [];
+    retornarDocumentos().then(function (tfidf) {
+      //tfidf.tfidfs(['blockchain', 'bitcoin, tech'], function (i, measure) {
+        tfidf.tfidfs(palabras, function (i, measure) {
+        documentos.push({
+          'nombre': '#' + i,
+          'relevancia': measure
+        });
+        //console.log('document #' + i + ' is ' + measure);
+      });
+      analisisKmeans(documentos).then(data => {
+        organizarLista(data).then(function(listaFinal){
+          resolve(listaFinal);
+        });
+      });
+    });
+  });
+}
+
+
+function retornarDocumentos() {
+  var tfidf = new TfIdf();
+  summ = [];
+  return new Promise(function (resolve, reject) {
+    /*search_query = {
+      all: words
+      //author: 'William Chan'
+    };*/
+
+    //arxiv.search(search_query, function (err, results) {
+    for (i = 0; i < 10; i++) {
+      //summ = results.items[i].summary.split(" ");
+      summ = documentosFiltradosPorAnio[i].summary.split(" ");
+      tfidf.addDocument(summ);
+      if (tfidf.documents.length == 10) {
+        resolve(tfidf);
+      }
+    }
+    //});
+  });
+}
+
+function analisisKmeans(data) {
+  return new Promise(function (resolve, reject) {
+    let vectors = new Array();
+    for (let i = 0; i < data.length; i++) {
+      vectors[i] = [data[i]['relevancia']];
+    }
+    kmeans.clusterize(vectors, {
+      k: 3
+    }, (err, res) => {
+      if (err) console.error(err);
+      //else console.log('%o', res);
+      else resolve(res); //console.log('%o', res);
+    });
+  });
+}
+
+function organizarLista(lista) {
+  return new Promise(function (resolve, reject) {
+    listaFinal = {};
+    var elemento = "";
+    for (i = 0; i < lista.length; i++) {
+      elemento = "elemento" + i
+      listaFinal[elemento] = {
+        elementos: []
+      }
+      for (j = 0; j < lista[i].clusterInd.length; j++) {
+        listaFinal[elemento]['elementos'].push({
+          "nombre": documentosFiltradosPorAnio[lista[i].clusterInd[j]].title,
+          "anio": documentosFiltradosPorAnio[lista[i].clusterInd[j]].published.toString().substring(0,15),
+          "link": documentosFiltradosPorAnio[lista[i].clusterInd[j]].links[1].href
+        });
+      }
+    }
+    resolve(listaFinal);
+    //console.log(JSON.stringify(listaFinal));
+  });
 }
 
 module.exports = router;
