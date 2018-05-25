@@ -443,7 +443,7 @@ module.exports = ""
 /***/ "./src/app/components/dashboard/dashboard.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<h2 class=\"page-header\">Vigtec</h2>\n<div class=\"center\">\n  <input [(ngModel)]=\"sentMessage\" type=\"text\">\n  <button (click)=\"getDocumentsPerAnio(sentMessage)\">Send your message</button>\n  <!--<button (click)=\"getAllDocuments(sentMessage)\">Send your message</button>-->\n</div>\n<!--<ng-container *ngFor = \"let message of messages\">\n    <div class=\"message\" [ngClass]=\"{ 'from': message.sentBy === 'bot',\n                                        'to': message.sentBy === 'user'}\">\n    {{ message.content }}\n    </div>\n</ng-container>-->\n\n<div style=\"position:relative;color:gray\">\n  <h1 *ngIf=\"showSpinner && !isAnalyzing\">\n    Consultando...\n  </h1>\n  <h1 *ngIf=\"showSpinner && isAnalyzing\">\n    Realizando análisis...\n  </h1>\n  <spinner-component [spinnerShow]=\"showSpinner\"></spinner-component>\n</div>\n\n<!--<p>{{algo}}</p>-->\n<div *ngIf=\"(query && query.length > 0) && !showStatistics \" data-tip=\"Ingrese las palabras separadas por coma y sin espacios\"\n  style=\"margin: left;width: 50%;padding: 10px;\">\n  <input type=\"text\" name=\"test\" [(ngModel)]=\"listaPalabras\"/>\n</div>\n<button *ngIf=\"(query && query.length > 0) && !showStatistics \" (click)=\"getAllDocuments(listaPalabras)\">Agrupar documentos</button>\n<ol *ngIf=\"(query && query.length > 0) && !showStatistics && !mostrarAgrupacion\" class=\"list\">\n  <li *ngFor=\"let q of query\">\n    {{q.nombreDocumento}}\n    <br>\n    <ul *ngFor=\"let palabra of q.palabrasClaves\">\n      <li>\n        <a (click)=\"getDocumentsPerAnio(palabra)\">{{palabra}}</a>\n      </li>\n    </ul>\n  </li>\n</ol>\n\n<div *ngIf=\"mostrarAgrupacion\">\n  <h2>Grupo 1</h2>\n  <ol>\n    <li *ngFor=\"let elem1 of grupo1\">\n      <a target=\"_blank\" (click)=\"onNavigate(elem1.link)\">{{elem1.nombre}} - {{elem1.anio}}</a>\n    </li>\n  </ol>\n  <h2>Grupo 2</h2>\n  <ol>\n    <li *ngFor=\"let elem2 of grupo2\">\n      <a target=\"_blank\" href={{elem2.link}}>{{elem2.nombre}} - {{elem2.anio}}</a>\n    </li>\n  </ol>\n  <h2>Grupo 3</h2>\n  <ol>\n    <li *ngFor=\"let elem3 of grupo3\">\n      <a target=\"_blank\" href=\"{{elem3.link}}\">{{elem3.nombre}} - {{elem3.anio}}</a>\n    </li>\n  </ol>\n</div>\n<app-statistics [list]=\"query\" *ngIf=\"showStatistics\" (anio)=\"initChat($event)\" [isAuthor]=\"isAuthor\"></app-statistics>\n<!--<button (click)=\"getFilteredDocs()\">consultar documentos filtrados</button>-->\n<!--<informacion-consulta [list]=\"query\" *ngIf=\"isSearch && !showStatistics\" (anio)=\"initChat($event)\"></informacion-consulta>-->\n"
+module.exports = "<h2 class=\"page-header\">Vigtec</h2>\n<div class=\"center\"  (keydown)=\"keyDownFunction($event)\">  \n  <input [(ngModel)]=\"sentMessage\" type=\"text\">\n  <button (click)=\"getDocumentsPerAnio(sentMessage)\" (keydown)=\"getDocumentsPerAnio(sentMessage)\">Buscar</button>\n</div>\n\n<div style=\"position:relative;color:gray\">\n  <h1 *ngIf=\"showSpinner && !isAnalyzing\">\n    Consultando...\n  </h1>\n  <h1 *ngIf=\"showSpinner && isAnalyzing\">\n    Realizando análisis...\n  </h1>\n  <spinner-component [spinnerShow]=\"showSpinner\"></spinner-component>\n</div>\n\n<div *ngIf=\"(query && query.length > 0) && !showStatistics \" data-tip=\"Ingrese las palabras separadas por coma y sin espacios\"\n  style=\"margin: left;width: 50%;padding: 10px;\">\n  <input type=\"text\" name=\"test\" [(ngModel)]=\"listaPalabras\"/>\n</div>\n<button *ngIf=\"(query && query.length > 0) && !showStatistics \" (click)=\"getAllDocuments(listaPalabras)\">Agrupar documentos</button>\n<ol *ngIf=\"(query && query.length > 0) && !showStatistics && !mostrarAgrupacion\">\n  <li *ngFor=\"let q of query; let i = index\">\n    {{q.nombreDocumento}} - <button (click)=\"mostrarPalabrasClaves(i)\">Ver palabras claves</button>\n    <br>\n    <ng-container *ngIf=\"mostrarPalabras && indice === i\">\n      <ul *ngFor=\"let palabra of q.palabrasClaves\">\n        <li>\n          <a (click)=\"getDocumentsPerAnio(palabra)\">{{palabra}}</a>\n        </li>\n      </ul>\n    </ng-container>\n  </li>\n</ol>\n\n\n<div *ngIf=\"mostrarAgrupacion\">\n  <h2>Grupo 1</h2>\n  <ol>\n    <li *ngFor=\"let elem1 of grupo1\">\n      <a target=\"_blank\" (click)=\"onNavigate(elem1.link)\">{{elem1.nombre}} - {{elem1.anio}}</a>\n    </li>\n  </ol>\n  <h2>Grupo 2</h2>\n  <ol>\n    <li *ngFor=\"let elem2 of grupo2\">\n      <a target=\"_blank\" href={{elem2.link}}>{{elem2.nombre}} - {{elem2.anio}}</a>\n    </li>\n  </ol>\n  <h2>Grupo 3</h2>\n  <ol>\n    <li *ngFor=\"let elem3 of grupo3\">\n      <a target=\"_blank\" href=\"{{elem3.link}}\">{{elem3.nombre}} - {{elem3.anio}}</a>\n    </li>\n  </ol>\n</div>\n<app-statistics [list]=\"query\" *ngIf=\"showStatistics\" (anio)=\"initChat($event)\" [isAuthor]=\"isAuthor\"></app-statistics>\n"
 
 /***/ }),
 
@@ -482,6 +482,7 @@ var DashboardComponent = /** @class */ (function () {
         this.grupo3 = [];
         this.mostrarAgrupacion = false;
         this.listaPalabras = '';
+        this.mostrarPalabras = false;
     }
     DashboardComponent.prototype.ngOnInit = function () {
     };
@@ -499,7 +500,6 @@ var DashboardComponent = /** @class */ (function () {
             _this.showStatistics = false;
             _this.query = res.query;
             _this.algo = res.algo;
-            _this.receivedMessage = res.botMessage;
             /*this.messages.push({ 'sentBy': 'user', 'content': this.sentMessage },
               { 'sentBy': 'bot', 'content': this.receivedMessage });*/
         }, function (error) { return console.log(error); });
@@ -518,8 +518,6 @@ var DashboardComponent = /** @class */ (function () {
             _this.showSpinner = false;
             _this.query = res.query;
             _this.algo = res.algo;
-            _this.receivedMessage = res.botMessage;
-            _this.messages.push({ 'sentBy': 'user', 'content': _this.sentMessage }, { 'sentBy': 'bot', 'content': _this.receivedMessage });
             _this.showStatistics = true;
         }, function (error) { console.log('error'); });
     };
@@ -567,6 +565,15 @@ var DashboardComponent = /** @class */ (function () {
     };
     DashboardComponent.prototype.onNavigate = function (link) {
         window.open(link, '_blank');
+    };
+    DashboardComponent.prototype.mostrarPalabrasClaves = function (i) {
+        this.indice = i;
+        this.mostrarPalabras = !this.mostrarPalabras;
+    };
+    DashboardComponent.prototype.keyDownFunction = function (event) {
+        if (event.keyCode === 13) {
+            this.getDocumentsPerAnio(this.sentMessage);
+        }
     };
     DashboardComponent = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({

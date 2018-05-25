@@ -24,6 +24,8 @@ export class DashboardComponent implements OnInit {
   grupo3 = [];
   mostrarAgrupacion = false;
   listaPalabras = '';
+  mostrarPalabras = false;
+  indice;
 
   constructor(private chatService: ChatService) { }
 
@@ -44,7 +46,6 @@ export class DashboardComponent implements OnInit {
         this.showStatistics = false;
         this.query = res.query;
         this.algo = res.algo;
-        this.receivedMessage = res.botMessage;
         /*this.messages.push({ 'sentBy': 'user', 'content': this.sentMessage },
           { 'sentBy': 'bot', 'content': this.receivedMessage });*/
       }, error => console.log(error)
@@ -64,10 +65,7 @@ export class DashboardComponent implements OnInit {
         this.isAuthor = false;
         this.showSpinner = false;
         this.query = res.query;
-        this.algo = res.algo;
-        this.receivedMessage = res.botMessage;
-        this.messages.push({ 'sentBy': 'user', 'content': this.sentMessage },
-          { 'sentBy': 'bot', 'content': this.receivedMessage });
+        this.algo = res.algo;        
         this.showStatistics = true;
       }, error => { console.log('error'); }
     );
@@ -123,6 +121,17 @@ export class DashboardComponent implements OnInit {
 
   onNavigate(link) {
     window.open(link, '_blank');
+  }
+
+  mostrarPalabrasClaves(i) {
+    this.indice = i;
+    this.mostrarPalabras = !this.mostrarPalabras;
+  }
+
+  keyDownFunction(event) {
+    if (event.keyCode === 13) {
+      this.getDocumentsPerAnio(this.sentMessage);
+    }
   }
 
 }

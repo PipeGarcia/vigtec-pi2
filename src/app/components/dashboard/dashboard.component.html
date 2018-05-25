@@ -1,15 +1,8 @@
 <h2 class="page-header">Vigtec</h2>
-<div class="center">
+<div class="center"  (keydown)="keyDownFunction($event)">  
   <input [(ngModel)]="sentMessage" type="text">
-  <button (click)="getDocumentsPerAnio(sentMessage)">Send your message</button>
-  <!--<button (click)="getAllDocuments(sentMessage)">Send your message</button>-->
+  <button (click)="getDocumentsPerAnio(sentMessage)" (keydown)="getDocumentsPerAnio(sentMessage)">Buscar</button>
 </div>
-<!--<ng-container *ngFor = "let message of messages">
-    <div class="message" [ngClass]="{ 'from': message.sentBy === 'bot',
-                                        'to': message.sentBy === 'user'}">
-    {{ message.content }}
-    </div>
-</ng-container>-->
 
 <div style="position:relative;color:gray">
   <h1 *ngIf="showSpinner && !isAnalyzing">
@@ -21,23 +14,25 @@
   <spinner-component [spinnerShow]="showSpinner"></spinner-component>
 </div>
 
-<!--<p>{{algo}}</p>-->
 <div *ngIf="(query && query.length > 0) && !showStatistics " data-tip="Ingrese las palabras separadas por coma y sin espacios"
   style="margin: left;width: 50%;padding: 10px;">
   <input type="text" name="test" [(ngModel)]="listaPalabras"/>
 </div>
 <button *ngIf="(query && query.length > 0) && !showStatistics " (click)="getAllDocuments(listaPalabras)">Agrupar documentos</button>
-<ol *ngIf="(query && query.length > 0) && !showStatistics && !mostrarAgrupacion" class="list">
-  <li *ngFor="let q of query">
-    {{q.nombreDocumento}}
+<ol *ngIf="(query && query.length > 0) && !showStatistics && !mostrarAgrupacion">
+  <li *ngFor="let q of query; let i = index">
+    {{q.nombreDocumento}} - <button (click)="mostrarPalabrasClaves(i)">Ver palabras claves</button>
     <br>
-    <ul *ngFor="let palabra of q.palabrasClaves">
-      <li>
-        <a (click)="getDocumentsPerAnio(palabra)">{{palabra}}</a>
-      </li>
-    </ul>
+    <ng-container *ngIf="mostrarPalabras && indice === i">
+      <ul *ngFor="let palabra of q.palabrasClaves">
+        <li>
+          <a (click)="getDocumentsPerAnio(palabra)">{{palabra}}</a>
+        </li>
+      </ul>
+    </ng-container>
   </li>
 </ol>
+
 
 <div *ngIf="mostrarAgrupacion">
   <h2>Grupo 1</h2>
@@ -60,5 +55,3 @@
   </ol>
 </div>
 <app-statistics [list]="query" *ngIf="showStatistics" (anio)="initChat($event)" [isAuthor]="isAuthor"></app-statistics>
-<!--<button (click)="getFilteredDocs()">consultar documentos filtrados</button>-->
-<!--<informacion-consulta [list]="query" *ngIf="isSearch && !showStatistics" (anio)="initChat($event)"></informacion-consulta>-->

@@ -42,110 +42,34 @@ var upload = multer({
 
 router.post('/initChatbot', (req, res, next) => {
   documentosAnalizados = [];
-  var words = req.body.mensaje.split(',');
-  var finalWords = [];
-  words.forEach(word => finalWords.push(word.toUpperCase()));
-  if (words.length > 1) {
-    severalWords = true;
-  } else {
-    severalWords = false;
-  }
-
-  search_query = {
-    all: words
-    //author: 'William Chan'
-  };
 
   getFilteredDocsPerAnio(req.body.mensaje).then(function (documentos) {
     console.log(documentos.length);
     getDocumentsPromise(documentos).then(function (documentosAnalizados) {
       res.send({
-        'botMessage': getBotResponse(req.body.mensaje),
         'query': documentosAnalizados,
         'algo': 'algo'
       })
     });
   });
-
-
 });
 
 function getDocumentsPromise(documentos) {
   return new Promise(function (resolve, reject) {
-    //arxiv.search(search_query, function (err, results) {
     var data = [];
     if (documentos.length != 0) {
       for (var i = 0; i < 5; i++) {
-
-        let pdfParser = new PDFParser(this, 1);
-        var options = {
-          url: documentos[i].links[1].href,
-          headers: {
-            'Referer': 'https://arxiv.org',
-            'User-Agent': 'request'
-          }
-        }
-        request(options).pipe(pdfParser);
-        var contenido;
-        //pdfParser.on("pdfParser_dataError", errData => console.error(errData.parserError));
-        //pdfParser.on("pdfParser_dataReady", pdfData => {
-          contenido = documentos[i].summary;
-          var parameters = getParameters(contenido);
-          natural_language_understanding.analyze(parameters, function (err, response) {
-            if (err)
-              console.log('error:', err);
-            else
-              var words = [];
-            response.keywords.forEach(keyword => words.push(keyword.text.toUpperCase()));
-            documentosAnalizados.push({
-              'nombreDocumento': documentos[i].title,
-              'palabrasClaves': words
-            });
-            if (documentosAnalizados.length == 5) {
-              resolve(documentosAnalizados);
-            }
-          });
-        //});
+        processDocument(documentos[i].summary, documentos[i].title).then((data) => {
+          resolve(data);
+        });
       }
     }
   })
-  //})
-
 }
 
 router.post('/fileUpload', upload.array("uploads[]", 12), (req, res) => {
   res.send({
     'successful': 'files uploaded succesfully'
-  });
-});
-
-function getBotResponse(message) {
-  var intent = '';
-  var output = '';
-  for (var i = 0; i < jsonBot.length; i++) {
-    jsonBot[i].examples.forEach(ex => {
-      if (ex.text.toUpperCase() === message.toUpperCase()) {
-        intent = jsonBot[i].intent;
-        output = jsonBot[i].description;
-      }
-    })
-  }
-  if (intent !== '' && output !== '') {
-    return output
-  } else {
-    if (severalWords) {
-      return 'Le resultó útil la búsqueda?'
-    } else {
-      return 'No se de que me esta hablando'
-    }
-  }
-}
-
-
-router.post('/processDocuments', (req, res) => {
-  initDocumentProcessing(req.body.files);
-  res.send({
-    'successful': 'successful processing'
   });
 });
 
@@ -161,16 +85,22 @@ function initDocumentProcessing(inputFiles) {
 }
 
 function processDocument(data, documentName) {
-  var parameters = getParameters(data);
-  natural_language_understanding.analyze(parameters, function (err, response) {
-    if (err)
-      console.log('error:', err);
-    else
-      var words = [];
-    response.keywords.forEach(keyword => words.push(keyword.text.toUpperCase()));
-    documentosAnalizados.push({
-      'nombreDocumento': documentName,
-      'palabrasClaves': words
+  return new Promise(function(resolve, reject) {
+    var parameters = getParameters(data);
+    documentos = [];
+    natural_language_understanding.analyze(parameters, function (err, response) {
+      if (err)
+        console.log('error:', err);
+      else
+        var words = [];
+      response.keywords.forEach(keyword => words.push(keyword.text.toUpperCase()));
+      documentos.push({
+        'nombreDocumento': documentName,
+        'palabrasClaves': words
+      });
+      if(documentos.length == 5) {
+        resolve(documentos);
+      }
     });
   });
 }
@@ -197,7 +127,6 @@ router.post('/getDocsPerYear', (req, res, next) => {
   docsPorAnio(req.body.mensaje).then(function (data) {
     //console.log(data);
     res.send({
-      'botMessage': getBotResponse(req.body.mensaje),
       'query': data,
       'algo': 'algo'
     })
