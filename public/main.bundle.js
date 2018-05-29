@@ -361,12 +361,14 @@ var AppComponent = /** @class */ (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__components_statistics_statistics_component__ = __webpack_require__("./src/app/components/statistics/statistics.component.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_21_ng2_charts_ng2_charts__ = __webpack_require__("./node_modules/ng2-charts/ng2-charts.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_21_ng2_charts_ng2_charts___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_21_ng2_charts_ng2_charts__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_22_ngx_bootstrap_modal__ = __webpack_require__("./node_modules/ngx-bootstrap/modal/index.js");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+
 
 
 
@@ -420,7 +422,8 @@ var AppModule = /** @class */ (function () {
                 __WEBPACK_IMPORTED_MODULE_4__angular_router__["b" /* RouterModule */].forRoot(appRoutes),
                 __WEBPACK_IMPORTED_MODULE_14_angular2_flash_messages__["FlashMessagesModule"],
                 __WEBPACK_IMPORTED_MODULE_19_ng2_component_spinner__["SpinnerComponentModule"],
-                __WEBPACK_IMPORTED_MODULE_21_ng2_charts_ng2_charts__["ChartsModule"]
+                __WEBPACK_IMPORTED_MODULE_21_ng2_charts_ng2_charts__["ChartsModule"],
+                __WEBPACK_IMPORTED_MODULE_22_ngx_bootstrap_modal__["b" /* ModalModule */].forRoot()
             ],
             providers: [__WEBPACK_IMPORTED_MODULE_12__services_validate_service__["a" /* ValidateService */], __WEBPACK_IMPORTED_MODULE_13__services_auth_service__["a" /* AuthService */], __WEBPACK_IMPORTED_MODULE_15__guards_auth_guard__["a" /* AuthGuard */], __WEBPACK_IMPORTED_MODULE_16__services_chat_service__["a" /* ChatService */], __WEBPACK_IMPORTED_MODULE_18__services_upload_service__["a" /* UploadService */]],
             bootstrap: [__WEBPACK_IMPORTED_MODULE_5__app_component__["a" /* AppComponent */]]
@@ -443,7 +446,7 @@ module.exports = ""
 /***/ "./src/app/components/dashboard/dashboard.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<h2 class=\"page-header\">Vigtec</h2>\n<div class=\"center\"  (keydown)=\"keyDownFunction($event)\">  \n  <input [(ngModel)]=\"sentMessage\" type=\"text\">\n  <button (click)=\"getDocumentsPerAnio(sentMessage)\" (keydown)=\"getDocumentsPerAnio(sentMessage)\">Buscar</button>\n</div>\n\n<div style=\"position:relative;color:gray\">\n  <h1 *ngIf=\"showSpinner && !isAnalyzing\">\n    Consultando...\n  </h1>\n  <h1 *ngIf=\"showSpinner && isAnalyzing\">\n    Realizando análisis...\n  </h1>\n  <spinner-component [spinnerShow]=\"showSpinner\"></spinner-component>\n</div>\n\n<div *ngIf=\"(query && query.length > 0) && !showStatistics \" data-tip=\"Ingrese las palabras separadas por coma y sin espacios\"\n  style=\"margin: left;width: 50%;padding: 10px;\">\n  <input type=\"text\" name=\"test\" [(ngModel)]=\"listaPalabras\"/>\n</div>\n<button *ngIf=\"(query && query.length > 0) && !showStatistics \" (click)=\"getAllDocuments(listaPalabras)\">Agrupar documentos</button>\n<ol *ngIf=\"(query && query.length > 0) && !showStatistics && !mostrarAgrupacion\">\n  <li *ngFor=\"let q of query; let i = index\">\n    {{q.nombreDocumento}} - <button (click)=\"mostrarPalabrasClaves(i)\">Ver palabras claves</button>\n    <br>\n    <ng-container *ngIf=\"mostrarPalabras && indice === i\">\n      <ul *ngFor=\"let palabra of q.palabrasClaves\">\n        <li>\n          <a (click)=\"getDocumentsPerAnio(palabra)\">{{palabra}}</a>\n        </li>\n      </ul>\n    </ng-container>\n  </li>\n</ol>\n\n\n<div *ngIf=\"mostrarAgrupacion\">\n  <h2>Grupo 1</h2>\n  <ol>\n    <li *ngFor=\"let elem1 of grupo1\">\n      <a target=\"_blank\" (click)=\"onNavigate(elem1.link)\">{{elem1.nombre}} - {{elem1.anio}}</a>\n    </li>\n  </ol>\n  <h2>Grupo 2</h2>\n  <ol>\n    <li *ngFor=\"let elem2 of grupo2\">\n      <a target=\"_blank\" href={{elem2.link}}>{{elem2.nombre}} - {{elem2.anio}}</a>\n    </li>\n  </ol>\n  <h2>Grupo 3</h2>\n  <ol>\n    <li *ngFor=\"let elem3 of grupo3\">\n      <a target=\"_blank\" href=\"{{elem3.link}}\">{{elem3.nombre}} - {{elem3.anio}}</a>\n    </li>\n  </ol>\n</div>\n<app-statistics [list]=\"query\" *ngIf=\"showStatistics\" (anio)=\"initChat($event)\" [isAuthor]=\"isAuthor\"></app-statistics>\n"
+module.exports = "<h2 class=\"page-header\">Vigtec</h2>\n<div class=\"center\" (keydown)=\"keyDownFunction($event, template, template2)\">\n  <input [(ngModel)]=\"sentMessage\" type=\"text\"> Tipo de búsqueda:\n  <br>\n  <input type=\"radio\" value=\"simple\" name=\"simple\" [(ngModel)]=\"tipoBusqueda\">Simple\n  <br>\n  <input type=\"radio\" value=\"avanzada\" name=\"avanzada\" [(ngModel)]=\"tipoBusqueda\">Por año\n  <br>\n  <div *ngIf=\"tipoBusqueda==='avanzada'\">\n    <select [(ngModel)]=\"selectedYear\" class=\"center\">\n      <option *ngFor=\"let y of years\" [ngValue]=\"y\">{{y}}</option>\n    </select>\n  </div>\n  <button (click)=\"getDocumentsPerAnio(sentMessage, template, template2)\">Buscar</button>\n</div>\n \n<ng-template #template>\n  <div class=\"modal-header\">\n    <h4 class=\"modal-title pull-left\">Buscar documentos</h4>\n    <button type=\"button\" class=\"close pull-right\" aria-label=\"Close\" (click)=\"modalRef.hide()\">\n      <span aria-hidden=\"true\">&times;</span>\n    </button>\n  </div>\n  <div class=\"modal-body\">\n    Debe ingresar al menos una palabra para iniciar la búsqueda!\n  </div>\n</ng-template>\n\n<ng-template #template1>\n  <div class=\"modal-header\">\n    <h4 class=\"modal-title pull-left\">Agrupar documentos</h4>\n    <button type=\"button\" class=\"close pull-right\" aria-label=\"Close\" (click)=\"modalRef.hide()\">\n      <span aria-hidden=\"true\">&times;</span>\n    </button>\n  </div>\n  <div class=\"modal-body\">\n    Debe ingresar al menos una palabra para agrupar los documentos, seleccionando al menos una de las palabras claves!\n  </div>\n</ng-template>\n\n<ng-template #template2>\n  <div class=\"modal-header\">\n    <h4 class=\"modal-title pull-left\">Búsqueda</h4>\n    <button type=\"button\" class=\"close pull-right\" aria-label=\"Close\" (click)=\"modalRef.hide()\">\n      <span aria-hidden=\"true\">&times;</span>\n    </button>\n  </div>\n  <div class=\"modal-body\">\n    No se encontraron artículos para la búsqueda realizada!\n  </div>\n</ng-template>\n\n\n<div style=\"position:relative;color:gray\">\n  <h1 *ngIf=\"showSpinner && !isAnalyzing\">\n    Consultando...\n  </h1>\n  <h1 *ngIf=\"showSpinner && isAnalyzing\">\n    Realizando análisis...\n  </h1>\n  <spinner-component [spinnerShow]=\"showSpinner\"></spinner-component>\n</div>\n\n<!--<div *ngIf=\"(query && query.length > 0) && !showStatistics \" data-tip=\"Ingrese las palabras separadas por coma y sin espacios\"-->\n<div *ngIf=\"(query && query.length > 0) && !showStatistics \" style=\"margin: left;width: 50%;padding: 10px;\">\n  <input type=\"text\" name=\"test\" [(ngModel)]=\"listaPalabras\" disabled/>\n</div>\n<button *ngIf=\"(query && query.length > 0) && !showStatistics \" (click)=\"getAllDocuments(template1)\">Agrupar documentos</button>\n<ol *ngIf=\"(query && query.length > 0) && !showStatistics && !mostrarAgrupacion\">\n  <li *ngFor=\"let q of query; let i = index\">\n    {{q.nombreDocumento}} -\n    <button (click)=\"mostrarPalabrasClaves(i)\">Ver palabras claves</button>\n    <br>\n    <ng-container *ngIf=\"mostrarPalabras && indice === i\">\n      <ul *ngFor=\"let palabra of q.palabrasClaves\">\n        <li>\n          <a (click)=\"agregarPalabraAAgrupar(palabra)\">{{palabra}}</a>\n        </li>\n      </ul>\n    </ng-container>\n  </li>\n</ol>\n\n<div *ngIf=\"mostrarAgrupacion\">\n  <h2>Grupo 1</h2>\n  <ol>\n    <li *ngFor=\"let elem1 of grupo1\">\n      <a target=\"_blank\" (click)=\"onNavigate(elem1.link)\">{{elem1.nombre}} - {{elem1.anio}}</a>\n    </li>\n  </ol>\n  <h2>Grupo 2</h2>\n  <ol>\n    <li *ngFor=\"let elem2 of grupo2\">\n      <a target=\"_blank\" href={{elem2.link}}>{{elem2.nombre}} - {{elem2.anio}}</a>\n    </li>\n  </ol>\n  <h2>Grupo 3</h2>\n  <ol>\n    <li *ngFor=\"let elem3 of grupo3\">\n      <a target=\"_blank\" href=\"{{elem3.link}}\">{{elem3.nombre}} - {{elem3.anio}}</a>\n    </li>\n  </ol>\n  <h2>Grupo 4</h2>\n  <ol>\n    <li *ngFor=\"let elem4 of grupo4\">\n      <a target=\"_blank\" href=\"{{elem4.link}}\">{{elem4.nombre}} - {{elem4.anio}}</a>\n    </li>\n  </ol>\n</div>\n<app-statistics [list]=\"query\" *ngIf=\"showStatistics\" (anio)=\"initChat($event, template2)\" [isAuthor]=\"isAuthor\"></app-statistics>"
 
 /***/ }),
 
@@ -454,6 +457,7 @@ module.exports = "<h2 class=\"page-header\">Vigtec</h2>\n<div class=\"center\"  
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return DashboardComponent; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("./node_modules/@angular/core/esm5/core.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__services_chat_service__ = __webpack_require__("./src/app/services/chat.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_ngx_bootstrap_modal__ = __webpack_require__("./node_modules/ngx-bootstrap/modal/index.js");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -465,9 +469,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 
 
+
 var DashboardComponent = /** @class */ (function () {
-    function DashboardComponent(chatService) {
+    function DashboardComponent(chatService, modalService) {
         this.chatService = chatService;
+        this.modalService = modalService;
         this.posts = [];
         this.sentMessage = '';
         this.receivedMessage = '';
@@ -480,14 +486,24 @@ var DashboardComponent = /** @class */ (function () {
         this.grupo1 = [];
         this.grupo2 = [];
         this.grupo3 = [];
+        this.grupo4 = [];
         this.mostrarAgrupacion = false;
         this.listaPalabras = '';
         this.mostrarPalabras = false;
+        this.selectedYear = '2018';
+        this.years = ['2018', '2017', '2016', '2015', '2014', '2013', '2012',
+            '2011', '2010', '2009', '2008', '2007', '2006', '2005', '2004',
+            '2003', '2002', '2001', '2000', '1999', '1998', '1997', '1996',
+            '1995', '1994', '1993', '1992', '1991', '1990'];
+        this.tipoBusqueda = 'simple';
+        this.palabrasAAgrupar = [];
     }
     DashboardComponent.prototype.ngOnInit = function () {
     };
-    DashboardComponent.prototype.initChat = function (mensaje) {
+    DashboardComponent.prototype.initChat = function (mensaje, template) {
         var _this = this;
+        this.sentMessage = '';
+        this.tipoBusqueda = 'simple';
         this.mostrarAgrupacion = false;
         this.isAuthor = true;
         this.isAnalyzing = true;
@@ -499,27 +515,36 @@ var DashboardComponent = /** @class */ (function () {
             _this.showSpinner = false;
             _this.showStatistics = false;
             _this.query = res.query;
+            if (_this.query.nombreDocumento.length === 0) {
+                _this.openModal(template);
+            }
             _this.algo = res.algo;
-            /*this.messages.push({ 'sentBy': 'user', 'content': this.sentMessage },
-              { 'sentBy': 'bot', 'content': this.receivedMessage });*/
         }, function (error) { return console.log(error); });
     };
-    DashboardComponent.prototype.getDocumentsPerAnio = function (mensaje) {
+    DashboardComponent.prototype.getDocumentsPerAnio = function (mensaje, template, template2) {
         var _this = this;
-        this.mostrarAgrupacion = false;
-        this.showStatistics = false;
-        this.isAnalyzing = false;
-        this.query = [];
-        this.showSpinner = true;
-        var msg = { 'mensaje': mensaje };
-        this.chatService.getDocumentsPerAnio(msg).subscribe(function (res) {
-            _this.isSearch = true;
-            _this.isAuthor = false;
-            _this.showSpinner = false;
-            _this.query = res.query;
-            _this.algo = res.algo;
-            _this.showStatistics = true;
-        }, function (error) { console.log('error'); });
+        if (!this.sentMessage.trim()) {
+            this.openModal(template);
+        }
+        else {
+            this.mostrarAgrupacion = false;
+            this.showStatistics = false;
+            this.isAnalyzing = false;
+            this.query = [];
+            this.showSpinner = true;
+            var msg = { 'mensaje': mensaje };
+            this.chatService.getDocumentsPerAnio(msg).subscribe(function (res) {
+                _this.isSearch = true;
+                _this.isAuthor = false;
+                _this.showSpinner = false;
+                _this.query = res.query;
+                _this.algo = res.algo;
+                _this.showStatistics = true;
+                if (_this.tipoBusqueda === 'avanzada') {
+                    _this.initChat(_this.selectedYear, template2);
+                }
+            }, function (error) { console.log('error'); });
+        }
     };
     DashboardComponent.prototype.getFilteredDocs = function () {
         this.chatService.getFilteredDocs().subscribe(function (res) {
@@ -537,14 +562,28 @@ var DashboardComponent = /** @class */ (function () {
             _this.query = res.data;
         }, function (error) { return console.log(error); });
     };
-    DashboardComponent.prototype.getAllDocuments = function (mensaje) {
+    DashboardComponent.prototype.getAllDocuments = function (template) {
         var _this = this;
-        var json = { 'mensaje': mensaje };
-        this.chatService.getAllDocuments(json).subscribe(function (res) {
-            console.log(res);
-            _this.organizarListasDeDocumentos(res);
-            _this.mostrarAgrupacion = true;
-        }, function (error) { return console.log(error); });
+        if (!this.listaPalabras) {
+            this.openModal(template);
+        }
+        else {
+            var listaFinal_1 = [];
+            this.palabrasAAgrupar = this.listaPalabras.split('-');
+            this.palabrasAAgrupar.forEach(function (x) {
+                listaFinal_1.push(x.toLowerCase());
+            });
+            this.listaPalabras = '';
+            var json = { 'mensaje': listaFinal_1 };
+            this.grupo1 = [];
+            this.grupo2 = [];
+            this.grupo3 = [];
+            this.chatService.getAllDocuments(json).subscribe(function (res) {
+                console.log(res);
+                _this.organizarListasDeDocumentos(res);
+                _this.mostrarAgrupacion = true;
+            }, function (error) { return console.log(error); });
+        }
     };
     DashboardComponent.prototype.buscarPorPalabra = function (palabra) {
         console.log(palabra);
@@ -553,6 +592,7 @@ var DashboardComponent = /** @class */ (function () {
         var data0 = json.data.elemento0.elementos;
         var data1 = json.data.elemento1.elementos;
         var data2 = json.data.elemento2.elementos;
+        var data3 = json.data.elemento3.elementos;
         for (var i in data0) {
             this.grupo1.push({ 'nombre': data0[i].nombre, 'anio': data0[i].anio, 'link': data0[i].link });
         }
@@ -562,6 +602,9 @@ var DashboardComponent = /** @class */ (function () {
         for (var i in data2) {
             this.grupo3.push({ 'nombre': data2[i].nombre, 'anio': data2[i].anio, 'link': data2[i].link });
         }
+        for (var i in data3) {
+            this.grupo4.push({ 'nombre': data3[i].nombre, 'anio': data3[i].anio, 'link': data3[i].link });
+        }
     };
     DashboardComponent.prototype.onNavigate = function (link) {
         window.open(link, '_blank');
@@ -570,10 +613,21 @@ var DashboardComponent = /** @class */ (function () {
         this.indice = i;
         this.mostrarPalabras = !this.mostrarPalabras;
     };
-    DashboardComponent.prototype.keyDownFunction = function (event) {
+    DashboardComponent.prototype.keyDownFunction = function (event, template, template2) {
         if (event.keyCode === 13) {
-            this.getDocumentsPerAnio(this.sentMessage);
+            this.getDocumentsPerAnio(this.sentMessage, template, template2);
         }
+    };
+    DashboardComponent.prototype.agregarPalabraAAgrupar = function (palabra) {
+        if (this.listaPalabras.length === 0) {
+            this.listaPalabras = palabra;
+        }
+        else {
+            this.listaPalabras = this.listaPalabras + '-' + palabra;
+        }
+    };
+    DashboardComponent.prototype.openModal = function (template) {
+        this.modalRef = this.modalService.show(template);
     };
     DashboardComponent = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
@@ -581,7 +635,7 @@ var DashboardComponent = /** @class */ (function () {
             template: __webpack_require__("./src/app/components/dashboard/dashboard.component.html"),
             styles: [__webpack_require__("./src/app/components/dashboard/dashboard.component.css")]
         }),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__services_chat_service__["a" /* ChatService */]])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__services_chat_service__["a" /* ChatService */], __WEBPACK_IMPORTED_MODULE_2_ngx_bootstrap_modal__["a" /* BsModalService */]])
     ], DashboardComponent);
     return DashboardComponent;
 }());
@@ -736,7 +790,7 @@ module.exports = ""
 /***/ "./src/app/components/navbar/navbar.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<nav class=\"navbar navbar-default\">\n  <div class=\"container\">\n    <div class=\"navbar-header\">\n      <button type=\"button\" class=\"navbar-toggle collapsed\" data-toggle=\"collapse\" data-target=\"#navbar\" aria-expanded=\"false\" aria-controls=\"navbar\">\n        <span class=\"sr-only\">Toggle navigation</span>\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n      </button>\n      <a class=\"navbar-brand\" href=\"#\">VIGTEC App</a>\n    </div>\n    <div id=\"navbar\" class=\"collapse navbar-collapse\">\n      <ul class=\"nav navbar-nav navbar-left\">\n        <li [routerLinkActive]=\"['active']\" [routerLinkActiveOptions] = \"{exact:true}\"><a [routerLink]=\"['/']\">Home</a></li>\n      </ul>\n\n      <ul class=\"nav navbar-nav navbar-right\">\n        <li *ngIf=\"authService.loggedIn()\" [routerLinkActive]=\"['active']\" [routerLinkActiveOptions] = \"{exact:true}\"><a [routerLink]=\"['/dashboard']\">Dashboard</a></li>\n        <li *ngIf=\"authService.loggedIn()\" [routerLinkActive]=\"['active']\" [routerLinkActiveOptions] = \"{exact:true}\"><a [routerLink]=\"['/upload']\">Updload files</a></li>\n        <li *ngIf=\"authService.loggedIn()\" [routerLinkActive]=\"['active']\" [routerLinkActiveOptions] = \"{exact:true}\"><a [routerLink]=\"['/profile']\">Profile</a></li>\n\n        <li *ngIf=\"!authService.loggedIn()\"[routerLinkActive]=\"['active']\" [routerLinkActiveOptions] = \"{exact:true}\"><a [routerLink]=\"['/login']\">Login</a></li>\n        <li *ngIf=\"!authService.loggedIn()\"[routerLinkActive]=\"['active']\" [routerLinkActiveOptions] = \"{exact:true}\"><a [routerLink]=\"['/register']\">Register</a></li>\n        <li *ngIf=\"authService.loggedIn()\"><a (click)=\"onLogoutClick()\" href=\"#\">Logout</a></li>\n      </ul>\n    </div><!--/.nav-collapse -->\n  </div>\n</nav>\n\n"
+module.exports = "<nav class=\"navbar navbar-default\">\n  <div class=\"container\">\n    <div class=\"navbar-header\">\n      <button type=\"button\" class=\"navbar-toggle collapsed\" data-toggle=\"collapse\" data-target=\"#navbar\" aria-expanded=\"false\" aria-controls=\"navbar\">\n        <span class=\"sr-only\">Toggle navigation</span>\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n      </button>\n      <a class=\"navbar-brand\" href=\"#\">VIGTEC App</a>\n    </div>\n    <div id=\"navbar\" class=\"collapse navbar-collapse\">\n      <ul class=\"nav navbar-nav navbar-left\">\n        <li [routerLinkActive]=\"['active']\" [routerLinkActiveOptions] = \"{exact:true}\"><a [routerLink]=\"['/']\">Home</a></li>\n      </ul>\n\n      <ul class=\"nav navbar-nav navbar-right\">\n        <li *ngIf=\"authService.loggedIn()\" [routerLinkActive]=\"['active']\" [routerLinkActiveOptions] = \"{exact:true}\"><a [routerLink]=\"['/dashboard']\">Dashboard</a></li>\n        \n        <li *ngIf=\"authService.loggedIn()\" [routerLinkActive]=\"['active']\" [routerLinkActiveOptions] = \"{exact:true}\"><a [routerLink]=\"['/profile']\">Profile</a></li>\n\n        <li *ngIf=\"!authService.loggedIn()\"[routerLinkActive]=\"['active']\" [routerLinkActiveOptions] = \"{exact:true}\"><a [routerLink]=\"['/login']\">Login</a></li>\n        <li *ngIf=\"!authService.loggedIn()\"[routerLinkActive]=\"['active']\" [routerLinkActiveOptions] = \"{exact:true}\"><a [routerLink]=\"['/register']\">Register</a></li>\n        <li *ngIf=\"authService.loggedIn()\"><a (click)=\"onLogoutClick()\" href=\"#\">Logout</a></li>\n      </ul>\n    </div><!--/.nav-collapse -->\n  </div>\n</nav>\n\n"
 
 /***/ }),
 
@@ -1254,13 +1308,13 @@ var AuthService = /** @class */ (function () {
     AuthService.prototype.registerUser = function (user) {
         var headers = new __WEBPACK_IMPORTED_MODULE_1__angular_http__["Headers"]();
         headers.append('Content-Type', 'application/json');
-        return this.http.post('http://localhost:3000/users/register', user, { headers: headers })
+        return this.http.post('https://vigtec.herokuapp.com/users/register', user, { headers: headers })
             .map(function (res) { return res.json(); });
     };
     AuthService.prototype.authenticateUser = function (user) {
         var headers = new __WEBPACK_IMPORTED_MODULE_1__angular_http__["Headers"]();
         headers.append('Content-Type', 'application/json');
-        return this.http.post('http://localhost:3000/users/authenticate', user, { headers: headers })
+        return this.http.post('https://vigtec.herokuapp.com/users/authenticate', user, { headers: headers })
             .map(function (res) { return res.json(); });
     };
     AuthService.prototype.getProfile = function () {
@@ -1268,7 +1322,7 @@ var AuthService = /** @class */ (function () {
         this.loadToken();
         headers.append('Authorization', this.authToken);
         headers.append('Content-Type', 'application/json');
-        return this.http.get('http://localhost:3000/users/profile', { headers: headers })
+        return this.http.get('https://vigtec.herokuapp.com/users/profile', { headers: headers })
             .map(function (res) { return res.json(); });
     };
     AuthService.prototype.storeUserData = function (token, user) {

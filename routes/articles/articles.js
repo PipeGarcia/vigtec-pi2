@@ -55,14 +55,25 @@ router.post('/initChatbot', (req, res, next) => {
 });
 
 function getDocumentsPromise(documentos) {
+  limite = 0;
+  if (documentos.length > 20) {
+    limite = 20;
+  } else {
+    limite = documentos.length;
+  }
   return new Promise(function (resolve, reject) {
     var data = [];
     if (documentos.length != 0) {
-      for (var i = 0; i < 5; i++) {
-        processDocument(documentos[i].summary, documentos[i].title).then((data) => {
+      for (var i = 0; i < limite; i++) {
+        processDocument(documentos[i].summary, documentos[i].title, limite).then((data) => {
           resolve(data);
         });
       }
+    } else {
+      resolve({
+        'nombreDocumento': '',
+        'palabrasClaves': ''
+      });
     }
   })
 }
@@ -84,8 +95,8 @@ function initDocumentProcessing(inputFiles) {
   })
 }
 
-function processDocument(data, documentName) {
-  return new Promise(function(resolve, reject) {
+function processDocument(data, documentName, limite) {
+  return new Promise(function (resolve, reject) {
     var parameters = getParameters(data);
     documentos = [];
     natural_language_understanding.analyze(parameters, function (err, response) {
@@ -98,7 +109,7 @@ function processDocument(data, documentName) {
         'nombreDocumento': documentName,
         'palabrasClaves': words
       });
-      if(documentos.length == 5) {
+      if (documentos.length == limite) {
         resolve(documentos);
       }
     });
@@ -247,10 +258,7 @@ function docsPorAutor() {
 }
 
 router.post('/getAllDocuments', (req, res) => {
-  listaPalabras = req.body.mensaje.split(",");
-  console.log(listaPalabras);
-  agruparDocsConKmeans(listaPalabras).then(function (data) {
-    //console.log(JSON.stringify(data));
+  agruparDocsConKmeans(req.body.mensaje).then(function (data) {
     res.send({
       'data': data
     });
@@ -259,18 +267,28 @@ router.post('/getAllDocuments', (req, res) => {
 
 
 function agruparDocsConKmeans(palabras) {
+  limite = 0;
+  if (documentosFiltradosPorAnio.length > 20) {
+    limite = 20;
+  } else {
+    limite = documentosFiltradosPorAnio.length;
+  }
   return new Promise(function (resolve, reject) {
     documentos = [];
-    retornarDocumentos().then(function (tfidf) {
+    retornarDocumentos(limite).then(function (tfidf) {
+      console.log(palabras);
       //tfidf.tfidfs(['blockchain', 'bitcoin, tech'], function (i, measure) {
-      tfidf.tfidfs(palabras, function (i, measure) {
-        documentos.push({
-          'nombre': '#' + i,
-          'relevancia': measure
+      var matriz = new Array(palabras.length);
+      for (i = 0; i < limite; i++) {
+        matriz[i] = new Array(palabras.length);
+      }
+      for (var j = 0; j < palabras.length; j++) {
+        tfidf.tfidfs(palabras[j], function (i, measure) {
+          matriz[i][j] = measure;
         });
-        //console.log('document #' + i + ' is ' + measure);
-      });
-      analisisKmeans(documentos).then(data => {
+      }
+      console.log(matriz);
+      analisisKmeans(matriz).then(data => {
         organizarLista(data).then(function (listaFinal) {
           resolve(listaFinal);
         });
@@ -280,25 +298,20 @@ function agruparDocsConKmeans(palabras) {
 }
 
 
-function retornarDocumentos() {
+function retornarDocumentos(limite) {
   var tfidf = new TfIdf();
   summ = [];
   return new Promise(function (resolve, reject) {
-    /*search_query = {
-      all: words
-      //author: 'William Chan'
-    };*/
-
-    //arxiv.search(search_query, function (err, results) {
-    for (i = 0; i < 10; i++) {
-      //summ = results.items[i].summary.split(" ");
-      summ = documentosFiltradosPorAnio[i].summary.split(" ");
+    for (i = 0; i < limite; i++) {
+      //summ = documentosFiltradosPorAnio[i].summary.split(" ");
+      summ = documentosFiltradosPorAnio[i].summary;
+      console.log(documentosFiltradosPorAnio[i].title);
       tfidf.addDocument(summ);
-      if (tfidf.documents.length == 10) {
+      if (tfidf.documents.length == limite) {
         resolve(tfidf);
       }
     }
-    //});
+
   });
 }
 
@@ -306,10 +319,10 @@ function analisisKmeans(data) {
   return new Promise(function (resolve, reject) {
     let vectors = new Array();
     for (let i = 0; i < data.length; i++) {
-      vectors[i] = [data[i]['relevancia']];
+      vectors[i] = data[i];
     }
     kmeans.clusterize(vectors, {
-      k: 3
+      k: 4
     }, (err, res) => {
       if (err) console.error(err);
       //else console.log('%o', res);
@@ -335,8 +348,8 @@ function organizarLista(lista) {
         });
       }
     }
-    resolve(listaFinal);
     //console.log(JSON.stringify(listaFinal));
+    resolve(listaFinal);
   });
 }
 

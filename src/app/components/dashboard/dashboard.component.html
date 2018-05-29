@@ -1,8 +1,55 @@
 <h2 class="page-header">Vigtec</h2>
-<div class="center"  (keydown)="keyDownFunction($event)">  
-  <input [(ngModel)]="sentMessage" type="text">
-  <button (click)="getDocumentsPerAnio(sentMessage)" (keydown)="getDocumentsPerAnio(sentMessage)">Buscar</button>
+<div class="center" (keydown)="keyDownFunction($event, template, template2)">
+  <input [(ngModel)]="sentMessage" type="text"> Tipo de búsqueda:
+  <br>
+  <input type="radio" value="simple" name="simple" [(ngModel)]="tipoBusqueda">Simple
+  <br>
+  <input type="radio" value="avanzada" name="avanzada" [(ngModel)]="tipoBusqueda">Por año
+  <br>
+  <div *ngIf="tipoBusqueda==='avanzada'">
+    <select [(ngModel)]="selectedYear" class="center">
+      <option *ngFor="let y of years" [ngValue]="y">{{y}}</option>
+    </select>
+  </div>
+  <button (click)="getDocumentsPerAnio(sentMessage, template, template2)">Buscar</button>
 </div>
+ 
+<ng-template #template>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left">Buscar documentos</h4>
+    <button type="button" class="close pull-right" aria-label="Close" (click)="modalRef.hide()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    Debe ingresar al menos una palabra para iniciar la búsqueda!
+  </div>
+</ng-template>
+
+<ng-template #template1>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left">Agrupar documentos</h4>
+    <button type="button" class="close pull-right" aria-label="Close" (click)="modalRef.hide()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    Debe ingresar al menos una palabra para agrupar los documentos, seleccionando al menos una de las palabras claves!
+  </div>
+</ng-template>
+
+<ng-template #template2>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left">Búsqueda</h4>
+    <button type="button" class="close pull-right" aria-label="Close" (click)="modalRef.hide()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    No se encontraron artículos para la búsqueda realizada!
+  </div>
+</ng-template>
+
 
 <div style="position:relative;color:gray">
   <h1 *ngIf="showSpinner && !isAnalyzing">
@@ -14,25 +61,25 @@
   <spinner-component [spinnerShow]="showSpinner"></spinner-component>
 </div>
 
-<div *ngIf="(query && query.length > 0) && !showStatistics " data-tip="Ingrese las palabras separadas por coma y sin espacios"
-  style="margin: left;width: 50%;padding: 10px;">
-  <input type="text" name="test" [(ngModel)]="listaPalabras"/>
+<!--<div *ngIf="(query && query.length > 0) && !showStatistics " data-tip="Ingrese las palabras separadas por coma y sin espacios"-->
+<div *ngIf="(query && query.length > 0) && !showStatistics " style="margin: left;width: 50%;padding: 10px;">
+  <input type="text" name="test" [(ngModel)]="listaPalabras" disabled/>
 </div>
-<button *ngIf="(query && query.length > 0) && !showStatistics " (click)="getAllDocuments(listaPalabras)">Agrupar documentos</button>
+<button *ngIf="(query && query.length > 0) && !showStatistics " (click)="getAllDocuments(template1)">Agrupar documentos</button>
 <ol *ngIf="(query && query.length > 0) && !showStatistics && !mostrarAgrupacion">
   <li *ngFor="let q of query; let i = index">
-    {{q.nombreDocumento}} - <button (click)="mostrarPalabrasClaves(i)">Ver palabras claves</button>
+    {{q.nombreDocumento}} -
+    <button (click)="mostrarPalabrasClaves(i)">Ver palabras claves</button>
     <br>
     <ng-container *ngIf="mostrarPalabras && indice === i">
       <ul *ngFor="let palabra of q.palabrasClaves">
         <li>
-          <a (click)="getDocumentsPerAnio(palabra)">{{palabra}}</a>
+          <a (click)="agregarPalabraAAgrupar(palabra)">{{palabra}}</a>
         </li>
       </ul>
     </ng-container>
   </li>
 </ol>
-
 
 <div *ngIf="mostrarAgrupacion">
   <h2>Grupo 1</h2>
@@ -53,5 +100,11 @@
       <a target="_blank" href="{{elem3.link}}">{{elem3.nombre}} - {{elem3.anio}}</a>
     </li>
   </ol>
+  <h2>Grupo 4</h2>
+  <ol>
+    <li *ngFor="let elem4 of grupo4">
+      <a target="_blank" href="{{elem4.link}}">{{elem4.nombre}} - {{elem4.anio}}</a>
+    </li>
+  </ol>
 </div>
-<app-statistics [list]="query" *ngIf="showStatistics" (anio)="initChat($event)" [isAuthor]="isAuthor"></app-statistics>
+<app-statistics [list]="query" *ngIf="showStatistics" (anio)="initChat($event, template2)" [isAuthor]="isAuthor"></app-statistics>
