@@ -122,6 +122,7 @@ export class DashboardComponent implements OnInit {
       this.grupo1 = [];
       this.grupo2 = [];
       this.grupo3 = [];
+      this.grupo4 = [];
       this.chatService.getAllDocuments(json).subscribe(res => {
         console.log(res);
         this.organizarListasDeDocumentos(res);

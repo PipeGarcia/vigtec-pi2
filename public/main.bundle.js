@@ -578,6 +578,7 @@ var DashboardComponent = /** @class */ (function () {
             this.grupo1 = [];
             this.grupo2 = [];
             this.grupo3 = [];
+            this.grupo4 = [];
             this.chatService.getAllDocuments(json).subscribe(function (res) {
                 console.log(res);
                 _this.organizarListasDeDocumentos(res);
